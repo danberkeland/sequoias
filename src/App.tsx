@@ -2,12 +2,30 @@ import { useEffect, useState } from "react";
 import type { Schema } from "../amplify/data/resource";
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { generateClient } from "aws-amplify/data";
+import { fetchUserAttributes } from 'aws-amplify/auth';
 
 const client = generateClient<Schema>();
+
+
 
 function App() {
     const { signOut } = useAuthenticator();
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+
+  const [familyName, setFamilyName] = useState<string>('');
+
+useEffect(() => {
+  async function loadUserAttributes() {
+    try {
+      const attributes = await fetchUserAttributes();
+      setFamilyName(attributes.family_name ?? '');
+    } catch (error) {
+      console.error('Error fetching user attributes:', error);
+    }
+  }
+
+  loadUserAttributes();
+}, []);
 
   useEffect(() => {
     client.models.Todo.observeQuery().subscribe({
@@ -26,7 +44,10 @@ function App() {
 
   return (
     <main>
-      <h1>My todos</h1>
+      <h1>My Sequoia Camp Application</h1>
+       {familyName && (
+      <h2>Family: {familyName}</h2>
+    )}
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (
