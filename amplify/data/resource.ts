@@ -8,11 +8,11 @@ const schema = a.schema({
 
       camper_type: a.enum([
         "ATHLETE",
-        "FAMILY_MEMBER",
+        "PARENT",
+        "NON_PARENT_ADULT_ALUMNI",
+        "SIBLING",
         "COACH",
-        "ALUMNI",
       ]),
-
       shirt_size: a.enum(["XS", "S", "M", "L", "XL"]),
 
       sweatshirt_size: a.enum(["XS", "S", "M", "L", "XL"]),
