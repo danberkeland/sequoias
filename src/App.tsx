@@ -5,7 +5,7 @@ import { generateClient } from "aws-amplify/data";
 import { fetchUserAttributes } from "aws-amplify/auth";
 import "./App.css";
 
-const client = generateClient<Schema>();
+
 
 
 type Camper = Schema["Camper"]["type"];
@@ -149,6 +149,7 @@ function App() {
   const [attendingFullCamp, setAttendingFullCamp] = useState(true);
   const [attendanceSchedule, setAttendanceSchedule] =
     useState<AttendanceSchedule>(createFullAttendanceSchedule());
+  const client = generateClient<Schema>();
 
   useEffect(() => {
     async function loadUserAttributes() {
