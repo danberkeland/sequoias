@@ -20,6 +20,10 @@ const schema = a.schema({
       special_dietary_needs: a.string(),
       attending_full_camp: a.boolean().default(true),
       attendance_schedule: a.json(),
+      is_driver: a.boolean().default(false),
+      empty_seats_to_camp: a.integer().default(0),
+      empty_seats_from_camp: a.integer().default(0),
+      empty_seats_during_camp: a.integer().default(0),
     })
     .authorization((allow) => [allow.owner()]),
 });
