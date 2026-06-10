@@ -482,64 +482,86 @@ textarea {
   color: #334155;
 }
 
-.attendance-scheda {
-  margin-top: 16px;
-  border: 1px solid #d1fae5;
-  border-radius: 18px;
-  background: #f0fdf4;
-  padding: 18px;
+.scheda-table {
+  border: 1px solid #bbf7d0;
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
 }
 
-.scheda-header h3 {
-  margin: 0;
-  color: #064e3b;
-}
-
-.scheda-header p {
-  margin: 6px 0 16px;
-  color: #047857;
-}
-
-.scheda-grid {
+.scheda-table-header,
+.scheda-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 120px repeat(3, 1fr);
 }
 
-.scheda-meal {
+.scheda-table-header {
+  background: #064e3b;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.scheda-table-header div,
+.scheda-date,
+.scheda-cell {
+  padding: 12px 14px;
+  border-right: 1px solid #d1fae5;
+  border-bottom: 1px solid #d1fae5;
+}
+
+.scheda-table-header div:last-child,
+.scheda-row > div:last-child,
+.scheda-row > label:last-child {
+  border-right: none;
+}
+
+.scheda-row:last-child .scheda-date,
+.scheda-row:last-child .scheda-cell {
+  border-bottom: none;
+}
+
+.scheda-date {
+  background: #f0fdf4;
+  color: #064e3b;
+  font-weight: 800;
+}
+
+.scheda-cell {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: white;
-  border: 1px solid #bbf7d0;
-  border-radius: 14px;
-  padding: 12px;
   cursor: pointer;
+  color: #334155;
+  font-weight: 700;
 }
 
-.scheda-meal input {
+.scheda-cell input {
   width: auto;
 }
 
-.scheda-meal span {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: #334155;
+.scheda-cell:hover {
+  background: #f8fafc;
 }
 
-.scheda-meal strong {
-  color: #064e3b;
+.scheda-cell.is-empty {
+  justify-content: center;
+  background: #e5e7eb;
+  color: #94a3b8;
+  cursor: not-allowed;
+  font-weight: 800;
 }
 
-@media (max-width: 900px) {
-  .scheda-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 680px) {
+  .scheda-table {
+    overflow-x: auto;
   }
-}
 
-@media (max-width: 560px) {
-  .scheda-grid {
-    grid-template-columns: 1fr;
+  .scheda-table-header,
+  .scheda-row {
+    grid-template-columns: 100px repeat(3, 140px);
+    min-width: 520px;
   }
 }

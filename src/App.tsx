@@ -19,43 +19,118 @@ type CamperType =
 type Size = "XS" | "S" | "M" | "L" | "XL";
 
 const CAMP_MEALS = [
-    { id: "2026-07-26_DINNER", date: "July 26", meal: "Dinner" },
+  { id: "2026-07-26_DINNER", date: "July 26", meal: "Dinner" },
 
-    { id: "2026-07-27_BREAKFAST", date: "July 27", meal: "Breakfast" },
-    { id: "2026-07-27_LUNCH", date: "July 27", meal: "Lunch" },
-    { id: "2026-07-27_DINNER", date: "July 27", meal: "Dinner" },
+  { id: "2026-07-27_BREAKFAST", date: "July 27", meal: "Breakfast" },
+  { id: "2026-07-27_LUNCH", date: "July 27", meal: "Lunch" },
+  { id: "2026-07-27_DINNER", date: "July 27", meal: "Dinner" },
 
-    { id: "2026-07-28_BREAKFAST", date: "July 28", meal: "Breakfast" },
-    { id: "2026-07-28_LUNCH", date: "July 28", meal: "Lunch" },
-    { id: "2026-07-28_DINNER", date: "July 28", meal: "Dinner" },
+  { id: "2026-07-28_BREAKFAST", date: "July 28", meal: "Breakfast" },
+  { id: "2026-07-28_LUNCH", date: "July 28", meal: "Lunch" },
+  { id: "2026-07-28_DINNER", date: "July 28", meal: "Dinner" },
 
-    { id: "2026-07-29_BREAKFAST", date: "July 29", meal: "Breakfast" },
-    { id: "2026-07-29_LUNCH", date: "July 29", meal: "Lunch" },
-    { id: "2026-07-29_DINNER", date: "July 29", meal: "Dinner" },
+  { id: "2026-07-29_BREAKFAST", date: "July 29", meal: "Breakfast" },
+  { id: "2026-07-29_LUNCH", date: "July 29", meal: "Lunch" },
+  { id: "2026-07-29_DINNER", date: "July 29", meal: "Dinner" },
 
-    { id: "2026-07-30_BREAKFAST", date: "July 30", meal: "Breakfast" },
-    { id: "2026-07-30_LUNCH", date: "July 30", meal: "Lunch" },
-    { id: "2026-07-30_DINNER", date: "July 30", meal: "Dinner" },
+  { id: "2026-07-30_BREAKFAST", date: "July 30", meal: "Breakfast" },
+  { id: "2026-07-30_LUNCH", date: "July 30", meal: "Lunch" },
+  { id: "2026-07-30_DINNER", date: "July 30", meal: "Dinner" },
 
-    { id: "2026-07-31_BREAKFAST", date: "July 31", meal: "Breakfast" },
-    { id: "2026-07-31_LUNCH", date: "July 31", meal: "Lunch" },
-    { id: "2026-07-31_DINNER", date: "July 31", meal: "Dinner" },
+  { id: "2026-07-31_BREAKFAST", date: "July 31", meal: "Breakfast" },
+  { id: "2026-07-31_LUNCH", date: "July 31", meal: "Lunch" },
+  { id: "2026-07-31_DINNER", date: "July 31", meal: "Dinner" },
 
-    { id: "2026-08-01_BREAKFAST", date: "Aug 1", meal: "Breakfast" },
-    { id: "2026-08-01_LUNCH", date: "Aug 1", meal: "Lunch" },
-    { id: "2026-08-01_DINNER", date: "Aug 1", meal: "Dinner" },
+  { id: "2026-08-01_BREAKFAST", date: "Aug 1", meal: "Breakfast" },
+  { id: "2026-08-01_LUNCH", date: "Aug 1", meal: "Lunch" },
+  { id: "2026-08-01_DINNER", date: "Aug 1", meal: "Dinner" },
 
-    { id: "2026-08-02_BREAKFAST", date: "Aug 2", meal: "Breakfast" },
+  { id: "2026-08-02_BREAKFAST", date: "Aug 2", meal: "Breakfast" },
+];
+
+type AttendanceSchedule = Record<string, boolean>;
+
+type CampMealCell = {
+  id: string;
+  label: "Breakfast" | "Lunch" | "Dinner";
+} | null;
+
+const CAMP_DAYS: Array<{
+  date: string;
+  meals: CampMealCell[];
+}> = [
+    {
+      date: "July 26",
+      meals: [
+        null,
+        null,
+        { id: "2026-07-26_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "July 27",
+      meals: [
+        { id: "2026-07-27_BREAKFAST", label: "Breakfast" },
+        { id: "2026-07-27_LUNCH", label: "Lunch" },
+        { id: "2026-07-27_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "July 28",
+      meals: [
+        { id: "2026-07-28_BREAKFAST", label: "Breakfast" },
+        { id: "2026-07-28_LUNCH", label: "Lunch" },
+        { id: "2026-07-28_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "July 29",
+      meals: [
+        { id: "2026-07-29_BREAKFAST", label: "Breakfast" },
+        { id: "2026-07-29_LUNCH", label: "Lunch" },
+        { id: "2026-07-29_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "July 30",
+      meals: [
+        { id: "2026-07-30_BREAKFAST", label: "Breakfast" },
+        { id: "2026-07-30_LUNCH", label: "Lunch" },
+        { id: "2026-07-30_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "July 31",
+      meals: [
+        { id: "2026-07-31_BREAKFAST", label: "Breakfast" },
+        { id: "2026-07-31_LUNCH", label: "Lunch" },
+        { id: "2026-07-31_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "Aug 1",
+      meals: [
+        { id: "2026-08-01_BREAKFAST", label: "Breakfast" },
+        { id: "2026-08-01_LUNCH", label: "Lunch" },
+        { id: "2026-08-01_DINNER", label: "Dinner" },
+      ],
+    },
+    {
+      date: "Aug 2",
+      meals: [
+        { id: "2026-08-02_BREAKFAST", label: "Breakfast" },
+        null,
+        null,
+      ],
+    },
   ];
 
-  type AttendanceSchedule = Record<string, boolean>;
-
-  function createFullAttendanceSchedule(): AttendanceSchedule {
-    return CAMP_MEALS.reduce((schedule, meal) => {
-      schedule[meal.id] = true;
-      return schedule;
-    }, {} as AttendanceSchedule);
-  }
+function createFullAttendanceSchedule(): AttendanceSchedule {
+  return CAMP_MEALS.reduce((schedule, meal) => {
+    schedule[meal.id] = true;
+    return schedule;
+  }, {} as AttendanceSchedule);
+}
 
 function App() {
   const { user, signOut } = useAuthenticator();
@@ -201,7 +276,7 @@ function App() {
     (camper) => camper.camper_type === "COACH"
   ).length;
 
-  
+
 
   function toggleAttendanceMeal(mealId: string) {
     setAttendanceSchedule((current) => ({
@@ -385,19 +460,35 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="scheda-grid">
-                      {CAMP_MEALS.map((meal) => (
-                        <label key={meal.id} className="scheda-meal">
-                          <input
-                            type="checkbox"
-                            checked={attendanceSchedule[meal.id] ?? false}
-                            onChange={() => toggleAttendanceMeal(meal.id)}
-                          />
-                          <span>
-                            <strong>{meal.date}</strong>
-                            {meal.meal}
-                          </span>
-                        </label>
+                    <div className="scheda-table">
+                      <div className="scheda-table-header">
+                        <div>Date</div>
+                        <div>Breakfast</div>
+                        <div>Lunch</div>
+                        <div>Dinner</div>
+                      </div>
+
+                      {CAMP_DAYS.map((day) => (
+                        <div key={day.date} className="scheda-row">
+                          <div className="scheda-date">{day.date}</div>
+
+                          {day.meals.map((meal, index) =>
+                            meal ? (
+                              <label key={meal.id} className="scheda-cell">
+                                <input
+                                  type="checkbox"
+                                  checked={attendanceSchedule[meal.id] ?? false}
+                                  onChange={() => toggleAttendanceMeal(meal.id)}
+                                />
+                                <span>{meal.label}</span>
+                              </label>
+                            ) : (
+                              <div key={`${day.date}-${index}`} className="scheda-cell is-empty">
+                                —
+                              </div>
+                            )
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -440,49 +531,57 @@ function App() {
           </div>
 
           <div className="fee-breakdown">
-            <div className="fee-line">
-              <div>
-                <strong>Athletes</strong>
-                <span>$525 each</span>
+            {athleteCount > 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>Athletes</strong>
+                  <span>$525 each</span>
+                </div>
+                <div>
+                  {athleteCount} × $525
+                  <strong>${(athleteCount * 525).toLocaleString()}</strong>
+                </div>
               </div>
-              <div>
-                {athleteCount} × $525
-                <strong>${(athleteCount * 525).toLocaleString()}</strong>
-              </div>
-            </div>
+            )}
 
-            <div className="fee-line">
-              <div>
-                <strong>Parents</strong>
-                <span>One parent included with athlete registration</span>
+            {parentCount > 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>Parents</strong>
+                  <span>Included with athlete registration</span>
+                </div>
+                <div>
+                  {parentCount} × $0
+                  <strong>$0</strong>
+                </div>
               </div>
-              <div>
-                {parentCount} × $0
-                <strong>$0</strong>
-              </div>
-            </div>
+            )}
 
-            <div className="fee-line">
-              <div>
-                <strong>Non-parent Adults / Alumni</strong>
-                <span>$100 each</span>
+            {adultAlumniCount > 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>Non-parent Adults / Alumni</strong>
+                  <span>$100 each</span>
+                </div>
+                <div>
+                  {adultAlumniCount} × $100
+                  <strong>${(adultAlumniCount * 100).toLocaleString()}</strong>
+                </div>
               </div>
-              <div>
-                {adultAlumniCount} × $100
-                <strong>${(adultAlumniCount * 100).toLocaleString()}</strong>
-              </div>
-            </div>
+            )}
 
-            <div className="fee-line">
-              <div>
-                <strong>Siblings</strong>
-                <span>Middle school or younger</span>
+            {siblingCount > 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>Siblings</strong>
+                  <span>Middle school or younger</span>
+                </div>
+                <div>
+                  {siblingCount} × $50
+                  <strong>${(siblingCount * 50).toLocaleString()}</strong>
+                </div>
               </div>
-              <div>
-                {siblingCount} × $50
-                <strong>${(siblingCount * 50).toLocaleString()}</strong>
-              </div>
-            </div>
+            )}
 
             {coachCount > 0 && (
               <div className="fee-line">
@@ -492,6 +591,18 @@ function App() {
                 </div>
                 <div>
                   {coachCount} × $0
+                  <strong>$0</strong>
+                </div>
+              </div>
+            )}
+
+            {campers.length === 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>No campers added yet</strong>
+                  <span>Add a camper to calculate estimated fees.</span>
+                </div>
+                <div>
                   <strong>$0</strong>
                 </div>
               </div>
