@@ -18,6 +18,45 @@ type CamperType =
   | "COACH";
 type Size = "XS" | "S" | "M" | "L" | "XL";
 
+const CAMP_MEALS = [
+    { id: "2026-07-26_DINNER", date: "July 26", meal: "Dinner" },
+
+    { id: "2026-07-27_BREAKFAST", date: "July 27", meal: "Breakfast" },
+    { id: "2026-07-27_LUNCH", date: "July 27", meal: "Lunch" },
+    { id: "2026-07-27_DINNER", date: "July 27", meal: "Dinner" },
+
+    { id: "2026-07-28_BREAKFAST", date: "July 28", meal: "Breakfast" },
+    { id: "2026-07-28_LUNCH", date: "July 28", meal: "Lunch" },
+    { id: "2026-07-28_DINNER", date: "July 28", meal: "Dinner" },
+
+    { id: "2026-07-29_BREAKFAST", date: "July 29", meal: "Breakfast" },
+    { id: "2026-07-29_LUNCH", date: "July 29", meal: "Lunch" },
+    { id: "2026-07-29_DINNER", date: "July 29", meal: "Dinner" },
+
+    { id: "2026-07-30_BREAKFAST", date: "July 30", meal: "Breakfast" },
+    { id: "2026-07-30_LUNCH", date: "July 30", meal: "Lunch" },
+    { id: "2026-07-30_DINNER", date: "July 30", meal: "Dinner" },
+
+    { id: "2026-07-31_BREAKFAST", date: "July 31", meal: "Breakfast" },
+    { id: "2026-07-31_LUNCH", date: "July 31", meal: "Lunch" },
+    { id: "2026-07-31_DINNER", date: "July 31", meal: "Dinner" },
+
+    { id: "2026-08-01_BREAKFAST", date: "Aug 1", meal: "Breakfast" },
+    { id: "2026-08-01_LUNCH", date: "Aug 1", meal: "Lunch" },
+    { id: "2026-08-01_DINNER", date: "Aug 1", meal: "Dinner" },
+
+    { id: "2026-08-02_BREAKFAST", date: "Aug 2", meal: "Breakfast" },
+  ];
+
+  type AttendanceSchedule = Record<string, boolean>;
+
+  function createFullAttendanceSchedule(): AttendanceSchedule {
+    return CAMP_MEALS.reduce((schedule, meal) => {
+      schedule[meal.id] = true;
+      return schedule;
+    }, {} as AttendanceSchedule);
+  }
+
 function App() {
   const { user, signOut } = useAuthenticator();
 
@@ -33,8 +72,8 @@ function App() {
   const [showAddCamper, setShowAddCamper] = useState(false);
 
   const [attendingFullCamp, setAttendingFullCamp] = useState(true);
-const [attendanceSchedule, setAttendanceSchedule] =
-  useState<AttendanceSchedule>(createFullAttendanceSchedule());
+  const [attendanceSchedule, setAttendanceSchedule] =
+    useState<AttendanceSchedule>(createFullAttendanceSchedule());
 
   useEffect(() => {
     async function loadUserAttributes() {
@@ -76,9 +115,9 @@ const [attendanceSchedule, setAttendanceSchedule] =
         sweatshirt_size: sweatshirtSize,
         special_dietary_needs: specialDietaryNeeds.trim() || undefined,
         attending_full_camp: attendingFullCamp,
-attendance_schedule: attendingFullCamp
-  ? createFullAttendanceSchedule()
-  : attendanceSchedule,
+        attendance_schedule: attendingFullCamp
+          ? createFullAttendanceSchedule()
+          : attendanceSchedule,
       });
 
 
@@ -90,7 +129,7 @@ attendance_schedule: attendingFullCamp
       setSpecialDietaryNeeds("");
       setShowAddCamper(false);
       setAttendingFullCamp(true);
-setAttendanceSchedule(createFullAttendanceSchedule());
+      setAttendanceSchedule(createFullAttendanceSchedule());
     } catch (error) {
       console.error("Error creating camper:", error);
     }
@@ -143,94 +182,57 @@ setAttendanceSchedule(createFullAttendanceSchedule());
   }, 0);
 
   const athleteCount = campers.filter(
-  (camper) => camper.camper_type === "ATHLETE"
-).length;
+    (camper) => camper.camper_type === "ATHLETE"
+  ).length;
 
-const parentCount = campers.filter(
-  (camper) => camper.camper_type === "PARENT"
-).length;
+  const parentCount = campers.filter(
+    (camper) => camper.camper_type === "PARENT"
+  ).length;
 
-const adultAlumniCount = campers.filter(
-  (camper) => camper.camper_type === "NON_PARENT_ADULT_ALUMNI"
-).length;
+  const adultAlumniCount = campers.filter(
+    (camper) => camper.camper_type === "NON_PARENT_ADULT_ALUMNI"
+  ).length;
 
-const siblingCount = campers.filter(
-  (camper) => camper.camper_type === "SIBLING"
-).length;
+  const siblingCount = campers.filter(
+    (camper) => camper.camper_type === "SIBLING"
+  ).length;
 
-const coachCount = campers.filter(
-  (camper) => camper.camper_type === "COACH"
-).length;
+  const coachCount = campers.filter(
+    (camper) => camper.camper_type === "COACH"
+  ).length;
 
-const CAMP_MEALS = [
-  { id: "2026-07-26_DINNER", date: "July 26", meal: "Dinner" },
+  
 
-  { id: "2026-07-27_BREAKFAST", date: "July 27", meal: "Breakfast" },
-  { id: "2026-07-27_LUNCH", date: "July 27", meal: "Lunch" },
-  { id: "2026-07-27_DINNER", date: "July 27", meal: "Dinner" },
-
-  { id: "2026-07-28_BREAKFAST", date: "July 28", meal: "Breakfast" },
-  { id: "2026-07-28_LUNCH", date: "July 28", meal: "Lunch" },
-  { id: "2026-07-28_DINNER", date: "July 28", meal: "Dinner" },
-
-  { id: "2026-07-29_BREAKFAST", date: "July 29", meal: "Breakfast" },
-  { id: "2026-07-29_LUNCH", date: "July 29", meal: "Lunch" },
-  { id: "2026-07-29_DINNER", date: "July 29", meal: "Dinner" },
-
-  { id: "2026-07-30_BREAKFAST", date: "July 30", meal: "Breakfast" },
-  { id: "2026-07-30_LUNCH", date: "July 30", meal: "Lunch" },
-  { id: "2026-07-30_DINNER", date: "July 30", meal: "Dinner" },
-
-  { id: "2026-07-31_BREAKFAST", date: "July 31", meal: "Breakfast" },
-  { id: "2026-07-31_LUNCH", date: "July 31", meal: "Lunch" },
-  { id: "2026-07-31_DINNER", date: "July 31", meal: "Dinner" },
-
-  { id: "2026-08-01_BREAKFAST", date: "Aug 1", meal: "Breakfast" },
-  { id: "2026-08-01_LUNCH", date: "Aug 1", meal: "Lunch" },
-  { id: "2026-08-01_DINNER", date: "Aug 1", meal: "Dinner" },
-
-  { id: "2026-08-02_BREAKFAST", date: "Aug 2", meal: "Breakfast" },
-];
-
-type AttendanceSchedule = Record<string, boolean>;
-
-function createFullAttendanceSchedule(): AttendanceSchedule {
-  return CAMP_MEALS.reduce((schedule, meal) => {
-    schedule[meal.id] = true;
-    return schedule;
-  }, {} as AttendanceSchedule);
-}
-
-function toggleAttendanceMeal(mealId: string) {
-  setAttendanceSchedule((current) => ({
-    ...current,
-    [mealId]: !current[mealId],
-  }));
-}
-
-function handleFullCampChange(isFullCamp: boolean) {
-  setAttendingFullCamp(isFullCamp);
-
-  if (isFullCamp) {
-    setAttendanceSchedule(createFullAttendanceSchedule());
-  }
-}
-
-function getAttendanceSummary(camper: Camper) {
-  if (camper.attending_full_camp) {
-    return "Full camp";
+  function toggleAttendanceMeal(mealId: string) {
+    setAttendanceSchedule((current) => ({
+      ...current,
+      [mealId]: !current[mealId],
+    }));
   }
 
-  const schedule = camper.attendance_schedule as AttendanceSchedule | null;
+  function handleFullCampChange(isFullCamp: boolean) {
+    setAttendingFullCamp(isFullCamp);
 
-  if (!schedule) {
-    return "Partial camp";
+    if (isFullCamp) {
+      setAttendanceSchedule(createFullAttendanceSchedule());
+    }
   }
 
-  const attendingCount = CAMP_MEALS.filter((meal) => schedule[meal.id]).length;
+  function getAttendanceSummary(camper: Camper) {
+    if (camper.attending_full_camp) {
+      return "Full camp";
+    }
 
-  return `Partial camp — ${attendingCount} of ${CAMP_MEALS.length} meals`;
-}
+    const schedule = camper.attendance_schedule as AttendanceSchedule | null;
+
+    if (!schedule) {
+      return "Partial camp";
+    }
+
+    const attendingCount = CAMP_MEALS.filter((meal) => schedule[meal.id]).length;
+
+    return `Partial camp — ${attendingCount} of ${CAMP_MEALS.length} meals`;
+  }
 
   return (
     <main className="app-shell">
@@ -261,246 +263,246 @@ function getAttendanceSummary(camper: Camper) {
       </section>
 
       <section className="card">
-  <div className="section-header">
-    <div>
-      <h2>Add Camper</h2>
-      <p>
-        {showAddCamper
-          ? "Enter one camper or family member at a time."
-          : "Add athletes, parents, siblings, coaches, or alumni attending camp."}
-      </p>
-    </div>
+        <div className="section-header">
+          <div>
+            <h2>Add Camper</h2>
+            <p>
+              {showAddCamper
+                ? "Enter one camper or family member at a time."
+                : "Add athletes, parents, siblings, coaches, or alumni attending camp."}
+            </p>
+          </div>
 
-    <button
-      type="button"
-      className="primary-button"
-      onClick={() => setShowAddCamper((current) => !current)}
-    >
-      {showAddCamper ? "Close" : "+ Add Camper"}
-    </button>
-  </div>
-
-  {showAddCamper && (
-    <form onSubmit={createCamper} className="camper-form">
-      <div className="form-grid">
-        <label className="field">
-          <span>First Name</span>
-          <input
-            value={camperFirstName}
-            onChange={(event) => setCamperFirstName(event.target.value)}
-            required
-          />
-        </label>
-
-        <label className="field">
-          <span>Last Name</span>
-          <input
-            value={camperLastName}
-            onChange={(event) => setCamperLastName(event.target.value)}
-            required
-          />
-        </label>
-
-        <label className="field">
-          <span>Camper Type</span>
-          <select
-            value={camperType}
-            onChange={(event) =>
-              setCamperType(event.target.value as CamperType)
-            }
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setShowAddCamper((current) => !current)}
           >
-            <option value="ATHLETE">Athlete — $525</option>
-            <option value="PARENT">Parent — Included with Athlete</option>
-            <option value="NON_PARENT_ADULT_ALUMNI">
-              Non-parent Adult/Alumni — $100
-            </option>
-            <option value="SIBLING">
-              Sibling, Middle School or Younger — $50
-            </option>
-            <option value="COACH">Coach — Free</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span>Shirt Size</span>
-          <select
-            value={shirtSize}
-            onChange={(event) => setShirtSize(event.target.value as Size)}
-          >
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
-        </label>
-
-        <label className="field">
-          <span>Sweatshirt Size</span>
-          <select
-            value={sweatshirtSize}
-            onChange={(event) =>
-              setSweatshirtSize(event.target.value as Size)
-            }
-          >
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-          </select>
-        </label>
-
-        <label className="field field-full">
-          <span>Special Dietary Needs</span>
-          <textarea
-            value={specialDietaryNeeds}
-            onChange={(event) => setSpecialDietaryNeeds(event.target.value)}
-            placeholder="Leave blank if none"
-          />
-        </label>
-        <div className="field field-full">
-  <span>Camp Attendance</span>
-
-  <label className="checkbox-row">
-    <input
-      type="checkbox"
-      checked={attendingFullCamp}
-      onChange={(event) => handleFullCampChange(event.target.checked)}
-    />
-    <span>This camper will attend the full camp</span>
-  </label>
-
-  {!attendingFullCamp && (
-    <div className="attendance-scheda">
-      <div className="scheda-header">
-        <div>
-          <h3>Partial Camp Scheda</h3>
-          <p>
-            Select the meals this camper will attend. Full camp begins with
-            dinner on July 26 and ends after breakfast on Aug 2.
-          </p>
+            {showAddCamper ? "Close" : "+ Add Camper"}
+          </button>
         </div>
-      </div>
 
-      <div className="scheda-grid">
-        {CAMP_MEALS.map((meal) => (
-          <label key={meal.id} className="scheda-meal">
-            <input
-              type="checkbox"
-              checked={attendanceSchedule[meal.id] ?? false}
-              onChange={() => toggleAttendanceMeal(meal.id)}
-            />
-            <span>
-              <strong>{meal.date}</strong>
-              {meal.meal}
-            </span>
-          </label>
-        ))}
-      </div>
-    </div>
-  )}
-</div>
-      </div>
+        {showAddCamper && (
+          <form onSubmit={createCamper} className="camper-form">
+            <div className="form-grid">
+              <label className="field">
+                <span>First Name</span>
+                <input
+                  value={camperFirstName}
+                  onChange={(event) => setCamperFirstName(event.target.value)}
+                  required
+                />
+              </label>
 
-      <div className="form-actions">
-        <button
-          type="button"
-          className="secondary-action-button"
-          onClick={() => setShowAddCamper(false)}
-        >
-          Cancel
-        </button>
+              <label className="field">
+                <span>Last Name</span>
+                <input
+                  value={camperLastName}
+                  onChange={(event) => setCamperLastName(event.target.value)}
+                  required
+                />
+              </label>
 
-        <button type="submit" className="primary-button">
-          Save Camper
-        </button>
-      </div>
-    </form>
-  )}
-</section>
+              <label className="field">
+                <span>Camper Type</span>
+                <select
+                  value={camperType}
+                  onChange={(event) =>
+                    setCamperType(event.target.value as CamperType)
+                  }
+                >
+                  <option value="ATHLETE">Athlete — $525</option>
+                  <option value="PARENT">Parent — Included with Athlete</option>
+                  <option value="NON_PARENT_ADULT_ALUMNI">
+                    Non-parent Adult/Alumni — $100
+                  </option>
+                  <option value="SIBLING">
+                    Sibling, Middle School or Younger — $50
+                  </option>
+                  <option value="COACH">Coach — Free</option>
+                </select>
+              </label>
+
+              <label className="field">
+                <span>Shirt Size</span>
+                <select
+                  value={shirtSize}
+                  onChange={(event) => setShirtSize(event.target.value as Size)}
+                >
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                </select>
+              </label>
+
+              <label className="field">
+                <span>Sweatshirt Size</span>
+                <select
+                  value={sweatshirtSize}
+                  onChange={(event) =>
+                    setSweatshirtSize(event.target.value as Size)
+                  }
+                >
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                </select>
+              </label>
+
+              <label className="field field-full">
+                <span>Special Dietary Needs</span>
+                <textarea
+                  value={specialDietaryNeeds}
+                  onChange={(event) => setSpecialDietaryNeeds(event.target.value)}
+                  placeholder="Leave blank if none"
+                />
+              </label>
+              <div className="field field-full">
+                <span>Camp Attendance</span>
+
+                <label className="checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={attendingFullCamp}
+                    onChange={(event) => handleFullCampChange(event.target.checked)}
+                  />
+                  <span>This camper will attend the full camp</span>
+                </label>
+
+                {!attendingFullCamp && (
+                  <div className="attendance-scheda">
+                    <div className="scheda-header">
+                      <div>
+                        <h3>Partial Camp Scheda</h3>
+                        <p>
+                          Select the meals this camper will attend. Full camp begins with
+                          dinner on July 26 and ends after breakfast on Aug 2.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="scheda-grid">
+                      {CAMP_MEALS.map((meal) => (
+                        <label key={meal.id} className="scheda-meal">
+                          <input
+                            type="checkbox"
+                            checked={attendanceSchedule[meal.id] ?? false}
+                            onChange={() => toggleAttendanceMeal(meal.id)}
+                          />
+                          <span>
+                            <strong>{meal.date}</strong>
+                            {meal.meal}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button
+                type="button"
+                className="secondary-action-button"
+                onClick={() => setShowAddCamper(false)}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="primary-button">
+                Save Camper
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
 
       <section className="card">
         <div className="fee-panel">
-  <div className="fee-panel-main">
-    <div>
-      <p className="fee-kicker">Estimated Camp Fees</p>
-      <h2 className="fee-heading">Payment Summary</h2>
-      <p className="fee-description">
-        Fees are calculated from the camper types currently registered below.
-      </p>
-    </div>
+          <div className="fee-panel-main">
+            <div>
+              <p className="fee-kicker">Estimated Camp Fees</p>
+              <h2 className="fee-heading">Payment Summary</h2>
+              <p className="fee-description">
+                Fees are calculated from the camper types currently registered below.
+              </p>
+            </div>
 
-    <div className="fee-total-box">
-      <p className="fee-total-label">Total Due</p>
-      <p className="fee-total">${totalFee.toLocaleString()}</p>
-    </div>
-  </div>
+            <div className="fee-total-box">
+              <p className="fee-total-label">Total Due</p>
+              <p className="fee-total">${totalFee.toLocaleString()}</p>
+            </div>
+          </div>
 
-  <div className="fee-breakdown">
-    <div className="fee-line">
-      <div>
-        <strong>Athletes</strong>
-        <span>$525 each</span>
-      </div>
-      <div>
-        {athleteCount} × $525
-        <strong>${(athleteCount * 525).toLocaleString()}</strong>
-      </div>
-    </div>
+          <div className="fee-breakdown">
+            <div className="fee-line">
+              <div>
+                <strong>Athletes</strong>
+                <span>$525 each</span>
+              </div>
+              <div>
+                {athleteCount} × $525
+                <strong>${(athleteCount * 525).toLocaleString()}</strong>
+              </div>
+            </div>
 
-    <div className="fee-line">
-      <div>
-        <strong>Parents</strong>
-        <span>One parent included with athlete registration</span>
-      </div>
-      <div>
-        {parentCount} × $0
-        <strong>$0</strong>
-      </div>
-    </div>
+            <div className="fee-line">
+              <div>
+                <strong>Parents</strong>
+                <span>One parent included with athlete registration</span>
+              </div>
+              <div>
+                {parentCount} × $0
+                <strong>$0</strong>
+              </div>
+            </div>
 
-    <div className="fee-line">
-      <div>
-        <strong>Non-parent Adults / Alumni</strong>
-        <span>$100 each</span>
-      </div>
-      <div>
-        {adultAlumniCount} × $100
-        <strong>${(adultAlumniCount * 100).toLocaleString()}</strong>
-      </div>
-    </div>
+            <div className="fee-line">
+              <div>
+                <strong>Non-parent Adults / Alumni</strong>
+                <span>$100 each</span>
+              </div>
+              <div>
+                {adultAlumniCount} × $100
+                <strong>${(adultAlumniCount * 100).toLocaleString()}</strong>
+              </div>
+            </div>
 
-    <div className="fee-line">
-      <div>
-        <strong>Siblings</strong>
-        <span>Middle school or younger</span>
-      </div>
-      <div>
-        {siblingCount} × $50
-        <strong>${(siblingCount * 50).toLocaleString()}</strong>
-      </div>
-    </div>
+            <div className="fee-line">
+              <div>
+                <strong>Siblings</strong>
+                <span>Middle school or younger</span>
+              </div>
+              <div>
+                {siblingCount} × $50
+                <strong>${(siblingCount * 50).toLocaleString()}</strong>
+              </div>
+            </div>
 
-    {coachCount > 0 && (
-      <div className="fee-line">
-        <div>
-          <strong>Coaches</strong>
-          <span>No fee</span>
+            {coachCount > 0 && (
+              <div className="fee-line">
+                <div>
+                  <strong>Coaches</strong>
+                  <span>No fee</span>
+                </div>
+                <div>
+                  {coachCount} × $0
+                  <strong>$0</strong>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <p className="fee-disclaimer">
+            This is an estimated total. Final payment instructions will be provided by
+            the coaching staff.
+          </p>
         </div>
-        <div>
-          {coachCount} × $0
-          <strong>$0</strong>
-        </div>
-      </div>
-    )}
-  </div>
-
-  <p className="fee-disclaimer">
-    This is an estimated total. Final payment instructions will be provided by
-    the coaching staff.
-  </p>
-</div>
         <div className="section-header">
           <div>
             <h2>Registered Campers</h2>
