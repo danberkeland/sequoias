@@ -18,6 +18,8 @@ const schema = a.schema({
       sweatshirt_size: a.enum(["XS", "S", "M", "L", "XL"]),
 
       special_dietary_needs: a.string(),
+      attending_full_camp: a.boolean().default(true),
+      attendance_schedule: a.json(),
     })
     .authorization((allow) => [allow.owner()]),
 });

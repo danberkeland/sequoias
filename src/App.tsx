@@ -32,6 +32,10 @@ function App() {
   const [specialDietaryNeeds, setSpecialDietaryNeeds] = useState("");
   const [showAddCamper, setShowAddCamper] = useState(false);
 
+  const [attendingFullCamp, setAttendingFullCamp] = useState(true);
+const [attendanceSchedule, setAttendanceSchedule] =
+  useState<AttendanceSchedule>(createFullAttendanceSchedule());
+
   useEffect(() => {
     async function loadUserAttributes() {
       try {
@@ -71,6 +75,10 @@ function App() {
         shirt_size: shirtSize,
         sweatshirt_size: sweatshirtSize,
         special_dietary_needs: specialDietaryNeeds.trim() || undefined,
+        attending_full_camp: attendingFullCamp,
+attendance_schedule: attendingFullCamp
+  ? createFullAttendanceSchedule()
+  : attendanceSchedule,
       });
 
 
@@ -81,6 +89,8 @@ function App() {
       setSweatshirtSize("M");
       setSpecialDietaryNeeds("");
       setShowAddCamper(false);
+      setAttendingFullCamp(true);
+setAttendanceSchedule(createFullAttendanceSchedule());
     } catch (error) {
       console.error("Error creating camper:", error);
     }
@@ -151,6 +161,76 @@ const siblingCount = campers.filter(
 const coachCount = campers.filter(
   (camper) => camper.camper_type === "COACH"
 ).length;
+
+const CAMP_MEALS = [
+  { id: "2026-07-26_DINNER", date: "July 26", meal: "Dinner" },
+
+  { id: "2026-07-27_BREAKFAST", date: "July 27", meal: "Breakfast" },
+  { id: "2026-07-27_LUNCH", date: "July 27", meal: "Lunch" },
+  { id: "2026-07-27_DINNER", date: "July 27", meal: "Dinner" },
+
+  { id: "2026-07-28_BREAKFAST", date: "July 28", meal: "Breakfast" },
+  { id: "2026-07-28_LUNCH", date: "July 28", meal: "Lunch" },
+  { id: "2026-07-28_DINNER", date: "July 28", meal: "Dinner" },
+
+  { id: "2026-07-29_BREAKFAST", date: "July 29", meal: "Breakfast" },
+  { id: "2026-07-29_LUNCH", date: "July 29", meal: "Lunch" },
+  { id: "2026-07-29_DINNER", date: "July 29", meal: "Dinner" },
+
+  { id: "2026-07-30_BREAKFAST", date: "July 30", meal: "Breakfast" },
+  { id: "2026-07-30_LUNCH", date: "July 30", meal: "Lunch" },
+  { id: "2026-07-30_DINNER", date: "July 30", meal: "Dinner" },
+
+  { id: "2026-07-31_BREAKFAST", date: "July 31", meal: "Breakfast" },
+  { id: "2026-07-31_LUNCH", date: "July 31", meal: "Lunch" },
+  { id: "2026-07-31_DINNER", date: "July 31", meal: "Dinner" },
+
+  { id: "2026-08-01_BREAKFAST", date: "Aug 1", meal: "Breakfast" },
+  { id: "2026-08-01_LUNCH", date: "Aug 1", meal: "Lunch" },
+  { id: "2026-08-01_DINNER", date: "Aug 1", meal: "Dinner" },
+
+  { id: "2026-08-02_BREAKFAST", date: "Aug 2", meal: "Breakfast" },
+];
+
+type AttendanceSchedule = Record<string, boolean>;
+
+function createFullAttendanceSchedule(): AttendanceSchedule {
+  return CAMP_MEALS.reduce((schedule, meal) => {
+    schedule[meal.id] = true;
+    return schedule;
+  }, {} as AttendanceSchedule);
+}
+
+function toggleAttendanceMeal(mealId: string) {
+  setAttendanceSchedule((current) => ({
+    ...current,
+    [mealId]: !current[mealId],
+  }));
+}
+
+function handleFullCampChange(isFullCamp: boolean) {
+  setAttendingFullCamp(isFullCamp);
+
+  if (isFullCamp) {
+    setAttendanceSchedule(createFullAttendanceSchedule());
+  }
+}
+
+function getAttendanceSummary(camper: Camper) {
+  if (camper.attending_full_camp) {
+    return "Full camp";
+  }
+
+  const schedule = camper.attendance_schedule as AttendanceSchedule | null;
+
+  if (!schedule) {
+    return "Partial camp";
+  }
+
+  const attendingCount = CAMP_MEALS.filter((meal) => schedule[meal.id]).length;
+
+  return `Partial camp — ${attendingCount} of ${CAMP_MEALS.length} meals`;
+}
 
   return (
     <main className="app-shell">
@@ -279,6 +359,48 @@ const coachCount = campers.filter(
             placeholder="Leave blank if none"
           />
         </label>
+        <div className="field field-full">
+  <span>Camp Attendance</span>
+
+  <label className="checkbox-row">
+    <input
+      type="checkbox"
+      checked={attendingFullCamp}
+      onChange={(event) => handleFullCampChange(event.target.checked)}
+    />
+    <span>This camper will attend the full camp</span>
+  </label>
+
+  {!attendingFullCamp && (
+    <div className="attendance-scheda">
+      <div className="scheda-header">
+        <div>
+          <h3>Partial Camp Scheda</h3>
+          <p>
+            Select the meals this camper will attend. Full camp begins with
+            dinner on July 26 and ends after breakfast on Aug 2.
+          </p>
+        </div>
+      </div>
+
+      <div className="scheda-grid">
+        {CAMP_MEALS.map((meal) => (
+          <label key={meal.id} className="scheda-meal">
+            <input
+              type="checkbox"
+              checked={attendanceSchedule[meal.id] ?? false}
+              onChange={() => toggleAttendanceMeal(meal.id)}
+            />
+            <span>
+              <strong>{meal.date}</strong>
+              {meal.meal}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
       </div>
 
       <div className="form-actions">
@@ -406,6 +528,7 @@ const coachCount = campers.filter(
                   <th>Shirt</th>
                   <th>Sweatshirt</th>
                   <th>Dietary Needs</th>
+                  <th>Attendance</th>
                   <th></th>
                 </tr>
               </thead>
@@ -432,6 +555,7 @@ const coachCount = campers.filter(
                         ? camper.special_dietary_needs
                         : "None"}
                     </td>
+                    <td>{getAttendanceSummary(camper)}</td>
 
                     <td className="table-action">
                       <button
