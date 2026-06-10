@@ -7,6 +7,7 @@ import "./App.css";
 
 const client = generateClient<Schema>();
 
+
 type Camper = Schema["Camper"]["type"];
 
 type CamperType =
@@ -29,6 +30,7 @@ function App() {
   const [shirtSize, setShirtSize] = useState<Size>("M");
   const [sweatshirtSize, setSweatshirtSize] = useState<Size>("M");
   const [specialDietaryNeeds, setSpecialDietaryNeeds] = useState("");
+  const [showAddCamper, setShowAddCamper] = useState(false);
 
   useEffect(() => {
     async function loadUserAttributes() {
@@ -78,6 +80,7 @@ function App() {
       setShirtSize("M");
       setSweatshirtSize("M");
       setSpecialDietaryNeeds("");
+      setShowAddCamper(false);
     } catch (error) {
       console.error("Error creating camper:", error);
     }
@@ -129,6 +132,26 @@ function App() {
     return sum + getCamperFee(camper);
   }, 0);
 
+  const athleteCount = campers.filter(
+  (camper) => camper.camper_type === "ATHLETE"
+).length;
+
+const parentCount = campers.filter(
+  (camper) => camper.camper_type === "PARENT"
+).length;
+
+const adultAlumniCount = campers.filter(
+  (camper) => camper.camper_type === "NON_PARENT_ADULT_ALUMNI"
+).length;
+
+const siblingCount = campers.filter(
+  (camper) => camper.camper_type === "SIBLING"
+).length;
+
+const coachCount = campers.filter(
+  (camper) => camper.camper_type === "COACH"
+).length;
+
   return (
     <main className="app-shell">
 
@@ -158,111 +181,204 @@ function App() {
       </section>
 
       <section className="card">
-        <div className="section-header">
-          <div>
-            <h2>Add Camper</h2>
-            <p>Enter one camper or family member at a time.</p>
-          </div>
-        </div>
+  <div className="section-header">
+    <div>
+      <h2>Add Camper</h2>
+      <p>
+        {showAddCamper
+          ? "Enter one camper or family member at a time."
+          : "Add athletes, parents, siblings, coaches, or alumni attending camp."}
+      </p>
+    </div>
 
-        <form onSubmit={createCamper} className="camper-form">
-          <div className="form-grid">
-            <label className="field">
-              <span>First Name</span>
-              <input
-                value={camperFirstName}
-                onChange={(event) => setCamperFirstName(event.target.value)}
-                required
-              />
-            </label>
+    <button
+      type="button"
+      className="primary-button"
+      onClick={() => setShowAddCamper((current) => !current)}
+    >
+      {showAddCamper ? "Close" : "+ Add Camper"}
+    </button>
+  </div>
 
-            <label className="field">
-              <span>Last Name</span>
-              <input
-                value={camperLastName}
-                onChange={(event) => setCamperLastName(event.target.value)}
-                required
-              />
-            </label>
+  {showAddCamper && (
+    <form onSubmit={createCamper} className="camper-form">
+      <div className="form-grid">
+        <label className="field">
+          <span>First Name</span>
+          <input
+            value={camperFirstName}
+            onChange={(event) => setCamperFirstName(event.target.value)}
+            required
+          />
+        </label>
 
-            <label className="field">
-              <span>Camper Type</span>
-              <select
-                value={camperType}
-                onChange={(event) =>
-                  setCamperType(event.target.value as CamperType)
-                }
-              >
-                <option value="ATHLETE">Athlete — $525</option>
-                <option value="PARENT">Parent — Included with Athlete</option>
-                <option value="NON_PARENT_ADULT_ALUMNI">
-                  Non-parent Adult/Alumni — $100
-                </option>
-                <option value="SIBLING">Sibling, Middle School or Younger — $50</option>
-                <option value="COACH">Coach — Free</option>
-              </select>
-            </label>
+        <label className="field">
+          <span>Last Name</span>
+          <input
+            value={camperLastName}
+            onChange={(event) => setCamperLastName(event.target.value)}
+            required
+          />
+        </label>
 
-            <label className="field">
-              <span>Shirt Size</span>
-              <select
-                value={shirtSize}
-                onChange={(event) => setShirtSize(event.target.value as Size)}
-              >
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
-            </label>
+        <label className="field">
+          <span>Camper Type</span>
+          <select
+            value={camperType}
+            onChange={(event) =>
+              setCamperType(event.target.value as CamperType)
+            }
+          >
+            <option value="ATHLETE">Athlete — $525</option>
+            <option value="PARENT">Parent — Included with Athlete</option>
+            <option value="NON_PARENT_ADULT_ALUMNI">
+              Non-parent Adult/Alumni — $100
+            </option>
+            <option value="SIBLING">
+              Sibling, Middle School or Younger — $50
+            </option>
+            <option value="COACH">Coach — Free</option>
+          </select>
+        </label>
 
-            <label className="field">
-              <span>Sweatshirt Size</span>
-              <select
-                value={sweatshirtSize}
-                onChange={(event) =>
-                  setSweatshirtSize(event.target.value as Size)
-                }
-              >
-                <option value="XS">XS</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
-                <option value="XL">XL</option>
-              </select>
-            </label>
+        <label className="field">
+          <span>Shirt Size</span>
+          <select
+            value={shirtSize}
+            onChange={(event) => setShirtSize(event.target.value as Size)}
+          >
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+        </label>
 
-            <label className="field field-full">
-              <span>Special Dietary Needs</span>
-              <textarea
-                value={specialDietaryNeeds}
-                onChange={(event) => setSpecialDietaryNeeds(event.target.value)}
-                placeholder="Leave blank if none"
-              />
-            </label>
-          </div>
+        <label className="field">
+          <span>Sweatshirt Size</span>
+          <select
+            value={sweatshirtSize}
+            onChange={(event) =>
+              setSweatshirtSize(event.target.value as Size)
+            }
+          >
+            <option value="XS">XS</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+            <option value="XL">XL</option>
+          </select>
+        </label>
 
-          <div className="form-actions">
-            <button type="submit" className="primary-button">
-              + Add New Camper
-            </button>
-          </div>
-        </form>
-      </section>
+        <label className="field field-full">
+          <span>Special Dietary Needs</span>
+          <textarea
+            value={specialDietaryNeeds}
+            onChange={(event) => setSpecialDietaryNeeds(event.target.value)}
+            placeholder="Leave blank if none"
+          />
+        </label>
+      </div>
+
+      <div className="form-actions">
+        <button
+          type="button"
+          className="secondary-action-button"
+          onClick={() => setShowAddCamper(false)}
+        >
+          Cancel
+        </button>
+
+        <button type="submit" className="primary-button">
+          Save Camper
+        </button>
+      </div>
+    </form>
+  )}
+</section>
 
       <section className="card">
-        <div className="fee-summary">
-          <div>
-            <p className="fee-label">Estimated Camp Total</p>
-            <p className="fee-total">${totalFee.toLocaleString()}</p>
-          </div>
+        <div className="fee-panel">
+  <div className="fee-panel-main">
+    <div>
+      <p className="fee-kicker">Estimated Camp Fees</p>
+      <h2 className="fee-heading">Payment Summary</h2>
+      <p className="fee-description">
+        Fees are calculated from the camper types currently registered below.
+      </p>
+    </div>
 
-          <p className="fee-note">
-            $525 per athlete, one included parent, $100 for non-parent
-            adults/alumni, and $50 for siblings middle school or younger.
-          </p>
+    <div className="fee-total-box">
+      <p className="fee-total-label">Total Due</p>
+      <p className="fee-total">${totalFee.toLocaleString()}</p>
+    </div>
+  </div>
+
+  <div className="fee-breakdown">
+    <div className="fee-line">
+      <div>
+        <strong>Athletes</strong>
+        <span>$525 each</span>
+      </div>
+      <div>
+        {athleteCount} × $525
+        <strong>${(athleteCount * 525).toLocaleString()}</strong>
+      </div>
+    </div>
+
+    <div className="fee-line">
+      <div>
+        <strong>Parents</strong>
+        <span>One parent included with athlete registration</span>
+      </div>
+      <div>
+        {parentCount} × $0
+        <strong>$0</strong>
+      </div>
+    </div>
+
+    <div className="fee-line">
+      <div>
+        <strong>Non-parent Adults / Alumni</strong>
+        <span>$100 each</span>
+      </div>
+      <div>
+        {adultAlumniCount} × $100
+        <strong>${(adultAlumniCount * 100).toLocaleString()}</strong>
+      </div>
+    </div>
+
+    <div className="fee-line">
+      <div>
+        <strong>Siblings</strong>
+        <span>Middle school or younger</span>
+      </div>
+      <div>
+        {siblingCount} × $50
+        <strong>${(siblingCount * 50).toLocaleString()}</strong>
+      </div>
+    </div>
+
+    {coachCount > 0 && (
+      <div className="fee-line">
+        <div>
+          <strong>Coaches</strong>
+          <span>No fee</span>
         </div>
+        <div>
+          {coachCount} × $0
+          <strong>$0</strong>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <p className="fee-disclaimer">
+    This is an estimated total. Final payment instructions will be provided by
+    the coaching staff.
+  </p>
+</div>
         <div className="section-header">
           <div>
             <h2>Registered Campers</h2>
@@ -297,35 +413,35 @@ function App() {
               <tbody>
                 {campers.map((camper) => (
                   <tr key={camper.id}>
-  <td>
-    <strong>
-      {camper.camper_first_name} {camper.camper_last_name}
-    </strong>
-  </td>
+                    <td>
+                      <strong>
+                        {camper.camper_first_name} {camper.camper_last_name}
+                      </strong>
+                    </td>
 
-  <td>{formatCamperType(camper.camper_type)}</td>
+                    <td>{formatCamperType(camper.camper_type)}</td>
 
-  <td>${getCamperFee(camper).toLocaleString()}</td>
+                    <td>${getCamperFee(camper).toLocaleString()}</td>
 
-  <td>{camper.shirt_size ?? "Not selected"}</td>
+                    <td>{camper.shirt_size ?? "Not selected"}</td>
 
-  <td>{camper.sweatshirt_size ?? "Not selected"}</td>
+                    <td>{camper.sweatshirt_size ?? "Not selected"}</td>
 
-  <td>
-    {camper.special_dietary_needs
-      ? camper.special_dietary_needs
-      : "None"}
-  </td>
+                    <td>
+                      {camper.special_dietary_needs
+                        ? camper.special_dietary_needs
+                        : "None"}
+                    </td>
 
-  <td className="table-action">
-    <button
-      className="delete-button"
-      onClick={() => deleteCamper(camper.id)}
-    >
-      Delete
-    </button>
-  </td>
-</tr>
+                    <td className="table-action">
+                      <button
+                        className="delete-button"
+                        onClick={() => deleteCamper(camper.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
