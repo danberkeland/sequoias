@@ -175,42 +175,53 @@ function App() {
   }, []);
 
   async function createCamper(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (!camperFirstName.trim() || !camperLastName.trim()) {
-      alert("Please enter the camper's first and last name.");
+  if (!camperFirstName.trim() || !camperLastName.trim()) {
+    alert("Please enter the camper's first and last name.");
+    return;
+  }
+
+  const newCamper = {
+    camper_first_name: camperFirstName.trim(),
+    camper_last_name: camperLastName.trim(),
+    camper_type: camperType,
+    shirt_size: shirtSize,
+    sweatshirt_size: sweatshirtSize,
+    special_dietary_needs: specialDietaryNeeds.trim() || undefined,
+    attending_full_camp: attendingFullCamp,
+   attendance_schedule: JSON.stringify(
+  attendingFullCamp ? createFullAttendanceSchedule() : attendanceSchedule
+),
+  };
+
+  console.log("Trying to create camper:", newCamper);
+
+  try {
+    const { data, errors } = await client.models.Camper.create(newCamper);
+
+    if (errors) {
+      console.error("Camper create errors:", errors);
+      alert("There was a problem saving this camper. Check the console for details.");
       return;
     }
 
-    try {
-      await client.models.Camper.create({
-        camper_first_name: camperFirstName.trim(),
-        camper_last_name: camperLastName.trim(),
-        camper_type: camperType,
-        shirt_size: shirtSize,
-        sweatshirt_size: sweatshirtSize,
-        special_dietary_needs: specialDietaryNeeds.trim() || undefined,
-        attending_full_camp: attendingFullCamp,
-        attendance_schedule: attendingFullCamp
-          ? createFullAttendanceSchedule()
-          : attendanceSchedule,
-      });
+    console.log("Camper created successfully:", data);
 
-
-      setCamperFirstName("");
-      setCamperLastName("");
-      setCamperType("ATHLETE");
-      setShirtSize("M");
-      setSweatshirtSize("M");
-      setSpecialDietaryNeeds("");
-      setShowAddCamper(false);
-      setAttendingFullCamp(true);
-      setAttendanceSchedule(createFullAttendanceSchedule());
-    } catch (error) {
-      console.error("Error creating camper:", error);
-    }
+    setCamperFirstName("");
+    setCamperLastName("");
+    setCamperType("ATHLETE");
+    setShirtSize("M");
+    setSweatshirtSize("M");
+    setSpecialDietaryNeeds("");
+    setShowAddCamper(false);
+    setAttendingFullCamp(true);
+    setAttendanceSchedule(createFullAttendanceSchedule());
+  } catch (error) {
+    console.error("Unexpected error creating camper:", error);
+    alert("Unexpected error saving camper. Check the console for details.");
   }
-
+}
   async function deleteCamper(id: string) {
     try {
       await client.models.Camper.delete({ id });
@@ -294,12 +305,33 @@ function App() {
     }
   }
 
+  function parseAttendanceSchedule(
+  value: Camper["attendance_schedule"]
+): AttendanceSchedule | null {
+  if (!value) return null;
+
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as AttendanceSchedule;
+    } catch (error) {
+      console.error("Could not parse attendance schedule:", error);
+      return null;
+    }
+  }
+
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return value as AttendanceSchedule;
+  }
+
+  return null;
+}
+
   function getAttendanceSummary(camper: Camper) {
     if (camper.attending_full_camp) {
       return "Full camp";
     }
 
-    const schedule = camper.attendance_schedule as AttendanceSchedule | null;
+  const schedule = parseAttendanceSchedule(camper.attendance_schedule);
 
     if (!schedule) {
       return "Partial camp";
