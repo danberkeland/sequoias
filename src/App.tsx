@@ -186,8 +186,9 @@ function App() {
             <strong>
               {camper.camper_first_name} {camper.camper_last_name}
             </strong>{" "}
-            — {camper.camper_type.replace("_", " ")} — Shirt:{" "}
-            {camper.shirt_size} — Sweatshirt: {camper.sweatshirt_size}
+            — {(camper.camper_type ?? "UNKNOWN").replace("_", " ")} — Shirt:{" "}
+            {camper.shirt_size ?? "Not selected"} — Sweatshirt:{" "}
+            {camper.sweatshirt_size ?? "Not selected"}
             {camper.special_dietary_needs && (
               <> — Dietary Needs: {camper.special_dietary_needs}</>
             )}{" "}
