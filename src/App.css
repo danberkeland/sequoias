@@ -565,3 +565,32 @@ textarea {
     min-width: 520px;
   }
 }
+
+.driving-panel {
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+  background: #eff6ff;
+  padding: 18px;
+}
+
+.driving-panel > span {
+  color: #1e3a8a;
+  font-weight: 800;
+}
+
+.driving-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.driving-grid input {
+  background: white;
+}
+
+@media (max-width: 760px) {
+  .driving-grid {
+    grid-template-columns: 1fr;
+  }
+}

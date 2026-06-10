@@ -149,6 +149,10 @@ function App() {
   const [attendingFullCamp, setAttendingFullCamp] = useState(true);
   const [attendanceSchedule, setAttendanceSchedule] =
     useState<AttendanceSchedule>(createFullAttendanceSchedule());
+  const [isDriver, setIsDriver] = useState(false);
+  const [emptySeatsToCamp, setEmptySeatsToCamp] = useState(0);
+  const [emptySeatsFromCamp, setEmptySeatsFromCamp] = useState(0);
+  const [emptySeatsDuringCamp, setEmptySeatsDuringCamp] = useState(0);
   const client = generateClient<Schema>();
 
   useEffect(() => {
@@ -175,53 +179,73 @@ function App() {
   }, []);
 
   async function createCamper(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault();
+    event.preventDefault();
 
-  if (!camperFirstName.trim() || !camperLastName.trim()) {
-    alert("Please enter the camper's first and last name.");
-    return;
-  }
-
-  const newCamper = {
-    camper_first_name: camperFirstName.trim(),
-    camper_last_name: camperLastName.trim(),
-    camper_type: camperType,
-    shirt_size: shirtSize,
-    sweatshirt_size: sweatshirtSize,
-    special_dietary_needs: specialDietaryNeeds.trim() || undefined,
-    attending_full_camp: attendingFullCamp,
-   attendance_schedule: JSON.stringify(
-  attendingFullCamp ? createFullAttendanceSchedule() : attendanceSchedule
-),
-  };
-
-  console.log("Trying to create camper:", newCamper);
-
-  try {
-    const { data, errors } = await client.models.Camper.create(newCamper);
-
-    if (errors) {
-      console.error("Camper create errors:", errors);
-      alert("There was a problem saving this camper. Check the console for details.");
+    if (!camperFirstName.trim() || !camperLastName.trim()) {
+      alert("Please enter the camper's first and last name.");
       return;
     }
 
-    console.log("Camper created successfully:", data);
+    const newCamper = {
+  camper_first_name: camperFirstName.trim(),
+  camper_last_name: camperLastName.trim(),
+  camper_type: camperType,
+  shirt_size: shirtSize,
+  sweatshirt_size: sweatshirtSize,
+  special_dietary_needs: specialDietaryNeeds.trim() || undefined,
+  attending_full_camp: attendingFullCamp,
+  attendance_schedule: JSON.stringify(
+    attendingFullCamp ? createFullAttendanceSchedule() : attendanceSchedule
+  ),
 
-    setCamperFirstName("");
-    setCamperLastName("");
-    setCamperType("ATHLETE");
-    setShirtSize("M");
-    setSweatshirtSize("M");
-    setSpecialDietaryNeeds("");
-    setShowAddCamper(false);
-    setAttendingFullCamp(true);
-    setAttendanceSchedule(createFullAttendanceSchedule());
-  } catch (error) {
-    console.error("Unexpected error creating camper:", error);
-    alert("Unexpected error saving camper. Check the console for details.");
+  is_driver: canBeDriver ? isDriver : false,
+  empty_seats_to_camp: canBeDriver && isDriver ? emptySeatsToCamp : 0,
+  empty_seats_from_camp: canBeDriver && isDriver ? emptySeatsFromCamp : 0,
+  empty_seats_during_camp: canBeDriver && isDriver ? emptySeatsDuringCamp : 0,
+};
+
+    console.log("Trying to create camper:", newCamper);
+
+    try {
+      const { data, errors } = await client.models.Camper.create(newCamper);
+
+      if (errors) {
+        console.error("Camper create errors:", errors);
+        alert("There was a problem saving this camper. Check the console for details.");
+        return;
+      }
+
+      console.log("Camper created successfully:", data);
+
+      setCamperFirstName("");
+      setCamperLastName("");
+      setCamperType("ATHLETE");
+      setShirtSize("M");
+      setSweatshirtSize("M");
+      setSpecialDietaryNeeds("");
+      setShowAddCamper(false);
+      setAttendingFullCamp(true);
+      setAttendanceSchedule(createFullAttendanceSchedule());
+      setIsDriver(false);
+setEmptySeatsToCamp(0);
+setEmptySeatsFromCamp(0);
+setEmptySeatsDuringCamp(0);
+    } catch (error) {
+      console.error("Unexpected error creating camper:", error);
+      alert("Unexpected error saving camper. Check the console for details.");
+    }
   }
+
+function getTransportationSummary(camper: Camper) {
+  if (!camper.is_driver) {
+    return "Not driving";
+  }
+
+  return `Driving — Up: ${camper.empty_seats_to_camp ?? 0}, Home: ${
+    camper.empty_seats_from_camp ?? 0
+  }, At camp: ${camper.empty_seats_during_camp ?? 0}`;
 }
+
   async function deleteCamper(id: string) {
     try {
       await client.models.Camper.delete({ id });
@@ -306,32 +330,34 @@ function App() {
   }
 
   function parseAttendanceSchedule(
-  value: Camper["attendance_schedule"]
-): AttendanceSchedule | null {
-  if (!value) return null;
+    value: Camper["attendance_schedule"]
+  ): AttendanceSchedule | null {
+    if (!value) return null;
 
-  if (typeof value === "string") {
-    try {
-      return JSON.parse(value) as AttendanceSchedule;
-    } catch (error) {
-      console.error("Could not parse attendance schedule:", error);
-      return null;
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value) as AttendanceSchedule;
+      } catch (error) {
+        console.error("Could not parse attendance schedule:", error);
+        return null;
+      }
     }
-  }
 
-  if (typeof value === "object" && !Array.isArray(value)) {
-    return value as AttendanceSchedule;
-  }
+    if (typeof value === "object" && !Array.isArray(value)) {
+      return value as AttendanceSchedule;
+    }
 
-  return null;
-}
+    return null;
+  }
 
   function getAttendanceSummary(camper: Camper) {
     if (camper.attending_full_camp) {
       return "Full camp";
     }
 
-  const schedule = parseAttendanceSchedule(camper.attendance_schedule);
+   
+
+    const schedule = parseAttendanceSchedule(camper.attendance_schedule);
 
     if (!schedule) {
       return "Partial camp";
@@ -341,6 +367,23 @@ function App() {
 
     return `Partial camp — ${attendingCount} of ${CAMP_MEALS.length} meals`;
   }
+
+   function handleCamperTypeChange(newType: CamperType) {
+      setCamperType(newType);
+
+      const newTypeCanDrive =
+        newType === "PARENT" || newType === "NON_PARENT_ADULT_ALUMNI";
+
+      if (!newTypeCanDrive) {
+        setIsDriver(false);
+        setEmptySeatsToCamp(0);
+        setEmptySeatsFromCamp(0);
+        setEmptySeatsDuringCamp(0);
+      }
+    }
+
+  const canBeDriver =
+    camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
 
   return (
     <main className="app-shell">
@@ -416,7 +459,7 @@ function App() {
                 <select
                   value={camperType}
                   onChange={(event) =>
-                    setCamperType(event.target.value as CamperType)
+                    handleCamperTypeChange(event.target.value as CamperType)
                   }
                 >
                   <option value="ATHLETE">Athlete — $525</option>
@@ -430,6 +473,72 @@ function App() {
                   <option value="COACH">Coach — Free</option>
                 </select>
               </label>
+              {canBeDriver && (
+                <div className="field field-full driving-panel">
+                  <span>Transportation</span>
+
+                  <label className="checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={isDriver}
+                      onChange={(event) => {
+                        const checked = event.target.checked;
+                        setIsDriver(checked);
+
+                        if (!checked) {
+                          setEmptySeatsToCamp(0);
+                          setEmptySeatsFromCamp(0);
+                          setEmptySeatsDuringCamp(0);
+                        }
+                      }}
+                    />
+                    <span>I am planning to drive</span>
+                  </label>
+
+                  {isDriver && (
+                    <div className="driving-grid">
+                      <label className="field">
+                        <span>Empty seats going up to camp</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="15"
+                          value={emptySeatsToCamp}
+                          onChange={(event) =>
+                            setEmptySeatsToCamp(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Empty seats coming home</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="15"
+                          value={emptySeatsFromCamp}
+                          onChange={(event) =>
+                            setEmptySeatsFromCamp(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <label className="field">
+                        <span>Empty seats while at camp</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="15"
+                          value={emptySeatsDuringCamp}
+                          onChange={(event) =>
+                            setEmptySeatsDuringCamp(Number(event.target.value))
+                          }
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <label className="field">
                 <span>Shirt Size</span>
@@ -675,6 +784,7 @@ function App() {
                   <th>Sweatshirt</th>
                   <th>Dietary Needs</th>
                   <th>Attendance</th>
+                  <th>Transportation</th>
                   <th></th>
                 </tr>
               </thead>
@@ -702,6 +812,7 @@ function App() {
                         : "None"}
                     </td>
                     <td>{getAttendanceSummary(camper)}</td>
+                    <td>{getTransportationSummary(camper)}</td>
 
                     <td className="table-action">
                       <button
