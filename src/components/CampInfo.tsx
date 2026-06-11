@@ -1,5 +1,5 @@
-import packingListPdf from "../pdfs/2026_Camp_Pack_List.pdf";
-import itineraryPdf from "../pdfs/2026_Running_Camp_Schedule.pdf";
+import packingListPdf from "/pdfs/2026_Camp_Pack_List.pdf";
+import itineraryPdf from "/pdfs/2026_Running_Camp_Schedule.pdf";
 
 type AddCampInfoProps = {
   showCampInfo: boolean;
