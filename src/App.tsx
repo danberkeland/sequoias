@@ -44,6 +44,9 @@ function App() {
   const [emptySeatsFromCamp, setEmptySeatsFromCamp] = useState(0);
   const [emptySeatsDuringCamp, setEmptySeatsDuringCamp] = useState(0);
   const [showCampInfo, setShowCampInfo] = useState(false);
+  const [showJoinSLDC, setShowJoinSLDC] = useState(false);
+  const [showSignCampWaiver, setShowSignCampWaiver] = useState(false);
+  const [showPayCampFee, setShowPayCampFee] = useState(false);
 
   const canBeDriver =
     camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
@@ -220,9 +223,15 @@ function App() {
         attendanceSchedule={attendanceSchedule}
         toggleAttendanceMeal={toggleAttendanceMeal}
       />
-      <JoinSLDC />
-      <SignCampWaiver />
-      <PayCampFee />
+      <JoinSLDC
+        showJoinSLDC={showJoinSLDC}
+        setShowJoinSLDC={setShowJoinSLDC} />
+      <SignCampWaiver
+        showSignCampWaiver={showSignCampWaiver}
+        setShowSignCampWaiver={setShowSignCampWaiver} />
+      <PayCampFee
+        showPayCampFee={showPayCampFee}
+        setShowPayCampFee={setShowPayCampFee} />
       <CampInfo
         showCampInfo={showCampInfo}
         setShowCampInfo={setShowCampInfo}
