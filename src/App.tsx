@@ -13,6 +13,9 @@ import {
 
 import HeroCard from "./components/HeroCard";
 import AddCamperCard from "./components/AddCamperCard";
+import JoinSLDC from "./components/JoinSLDC";
+import SignCampWaiver from "./components/SignCampWaiver";
+import PayCampFee from "./components/PayCampFee";
 import PaymentSummary from "./components/PaymentSummary";
 import RegisteredCampersTable from "./components/RegisteredCampersTable";
 
@@ -215,14 +218,18 @@ function App() {
         attendanceSchedule={attendanceSchedule}
         toggleAttendanceMeal={toggleAttendanceMeal}
       />
+      <JoinSLDC />
+      <SignCampWaiver />
+      <PayCampFee />
+
 
       <section className="card">
-        <PaymentSummary campers={campers} />
 
         <RegisteredCampersTable
           campers={campers}
           deleteCamper={deleteCamper}
         />
+        <PaymentSummary campers={campers} />
       </section>
     </main>
   );

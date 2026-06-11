@@ -78,11 +78,13 @@ function AddCamperCard({
     <section className="card">
       <div className="section-header">
         <div>
-          <h2>Add Camper</h2>
+          <h1>Step 1</h1>
+          <br></br>
+          <h2>Add Campers</h2>
           <p>
             {showAddCamper
               ? "Enter one camper or family member at a time."
-              : "Add athletes, parents, siblings, coaches, or alumni attending camp."}
+              : "Add all athletes, parents, siblings, coaches, or alumni attending camp from your household."}
           </p>
         </div>
 
