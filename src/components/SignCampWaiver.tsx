@@ -20,7 +20,7 @@ function SignCampWaiver({
           <p>
             {showSignCampWaiver
               ? "Sign Sequoia Camp Waiver."
-              : "Sign waiver for whole family."}
+              : "Sign waiver for individual or for whole family."}
           </p>
         </div>
 

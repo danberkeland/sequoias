@@ -17,6 +17,7 @@ import JoinSLDC from "./components/JoinSLDC";
 import SignCampWaiver from "./components/SignCampWaiver";
 import PayCampFee from "./components/PayCampFee";
 import PaymentSummary from "./components/PaymentSummary";
+import CampInfo from "./components/CampInfo";
 import RegisteredCampersTable from "./components/RegisteredCampersTable";
 
 function App() {
@@ -221,6 +222,7 @@ function App() {
       <JoinSLDC />
       <SignCampWaiver />
       <PayCampFee />
+      <CampInfo />
 
 
       <section className="card">

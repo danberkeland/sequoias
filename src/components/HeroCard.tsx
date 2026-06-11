@@ -11,7 +11,7 @@ function HeroCard({ email, familyName, onSignOut }: HeroCardProps) {
         <p className="eyebrow">Sequoias Camp</p>
         <h1>My Application</h1>
         <p className="subtitle">
-          Add campers, shirt sizes, sweatshirt sizes, and dietary needs.
+          Add campers, Join SLDC, Sign Waivers, Pay Fees, prepare for THE HUMP!
         </p>
       </div>
 
