@@ -8,7 +8,7 @@ function HeroCard({ email, familyName, onSignOut }: HeroCardProps) {
   return (
     <section className="hero-card">
       <div>
-        <p className="eyebrow">Sequoias Camp</p>
+        <p className="eyebrow">SLDC Sequoias Running Camp (Sunday, July 26 -  Sunday, August 2)</p>
         <h1>My Application</h1>
         <p className="subtitle">
           Add campers, Join SLDC, Sign Waivers, Pay Fees, prepare for THE HUMP!
