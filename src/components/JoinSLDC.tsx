@@ -17,6 +17,103 @@ const SLDC_WAIVER_TEXT = `I know that running and volunteering to work at club r
 
 const RRCA_CODE_OF_CONDUCT_TEXT = `Members will always show respect for other members and race volunteers. No member is to yell, taunt, or threaten another club member, volunteer, or event spectator. Members are not to use abusive or vulgar language or make racial, ethnic, or gender related slurs or derogatory comments at club events or make unwanted contact, physical or otherwise, with other members.`;
 
+const SLDC_PAYPAL_HOSTED_BUTTON_ID = "5HKZEE5Q3YHYC";
+
+function SLDCPaymentSection() {
+  return (
+    <div className="sldc-payment-box">
+      <h3>SLDC Membership Payment</h3>
+
+      <p>
+        SLDC dues are $25 per calendar year and are pro-rated by quarter for new
+        members. There is no additional charge for other people in the same
+        family.
+      </p>
+
+      <div className="payment-warning">
+        <strong>Important:</strong> Your SLDC membership is not complete until
+        both the application/waiver and payment have been received. Online
+        payments may not be reflected on this page until reviewed by an SLDC
+        administrator. Please do not pay twice just because this page has not
+        been updated yet.
+      </div>
+
+      <div className="sldc-payment-options">
+        <div>
+          <h4>Pay online</h4>
+          <p>
+            Credit card and PayPal processing is handled by PayPal. You do not
+            need a PayPal account to pay by credit card.
+          </p>
+
+          <form
+            action="https://www.paypal.com/cgi-bin/webscr"
+            method="post"
+            target="_blank"
+            className="sldc-paypal-form"
+          >
+            <input type="hidden" name="cmd" value="_s-xclick" />
+            <input
+              type="hidden"
+              name="hosted_button_id"
+              value={SLDC_PAYPAL_HOSTED_BUTTON_ID}
+            />
+
+            <input
+              type="hidden"
+              name="on0"
+              value="Membership payments"
+            />
+
+            <label className="field">
+              <span>Membership Payment</span>
+              <select name="os0" defaultValue="SLDC  annual  dues">
+                <option value="SLDC  annual  dues">
+                  SLDC annual dues — $25.00
+                </option>
+                <option value="Pro-rated SLDC dues (April-June)">
+                  Pro-rated SLDC dues April-June — $18.75
+                </option>
+                <option value="Pro-rated SLDC dues (July-Sept.)">
+                  Pro-rated SLDC dues July-Sept. — $12.50
+                </option>
+                <option value="Pro-rated SLDC dues (Oct.-Dec.)">
+                  Pro-rated SLDC dues Oct.-Dec. — $6.25
+                </option>
+              </select>
+            </label>
+
+            <input type="hidden" name="currency_code" value="USD" />
+
+            <button type="submit" className="primary-button">
+              Pay SLDC Membership with PayPal
+            </button>
+          </form>
+        </div>
+
+        <div>
+          <h4>Pay by mail</h4>
+          <p>Checks can be mailed to:</p>
+
+          <address className="mailing-address">
+            San Luis Distance Club
+            <br />
+            Post Office Box 1134
+            <br />
+            San Luis Obispo, CA 93406-1134
+          </address>
+
+          <p>
+            Please include the member or family name with your payment so SLDC
+            can match the payment to the application.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 function JoinSLDC({
   campers,
   showJoinSLDC,
@@ -209,19 +306,21 @@ function JoinSLDC({
       {showJoinSLDC && (
         <div className="sldc-panel">
           <div className="sldc-info-box">
-            <h3>SLDC Membership</h3>
-            <p>
-              The San Luis Distance Club membership application states that dues
-              are $25 per calendar year, pro-rated by quarter for new members,
-              with no charge for additional people in the same family.
-            </p>
-            <p>
-              Complete this form for each camper/member who needs to be covered
-              by the SLDC waiver.
-            </p>
-          </div>
+  <h3>SLDC Membership</h3>
+  <p>
+    The San Luis Distance Club membership application states that dues
+    are $25 per calendar year, pro-rated by quarter for new members,
+    with no charge for additional people in the same family.
+  </p>
+  <p>
+    Complete this form for each camper/member who needs to be covered
+    by the SLDC waiver.
+  </p>
+</div>
 
-          <form onSubmit={saveSLDCApplication} className="camper-form">
+<SLDCPaymentSection />
+
+<form onSubmit={saveSLDCApplication} className="camper-form">
             <div className="form-grid">
               <label className="field field-full">
                 <span>Select Camper / Member</span>

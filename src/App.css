@@ -640,3 +640,61 @@ textarea {
   color: #334155;
   line-height: 1.55;
 }
+
+.sldc-payment-box {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 18px;
+  padding: 20px;
+}
+
+.sldc-payment-box h3 {
+  margin: 0 0 10px;
+  color: #7c2d12;
+}
+
+.payment-warning {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: #fffbeb;
+  border: 1px solid #facc15;
+  border-radius: 14px;
+  color: #713f12;
+  line-height: 1.5;
+}
+
+.sldc-payment-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-top: 18px;
+}
+
+.sldc-payment-options h4 {
+  margin: 0 0 8px;
+  color: #0f172a;
+}
+
+.sldc-paypal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.mailing-address {
+  margin: 12px 0;
+  padding: 14px;
+  background: white;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  color: #334155;
+  font-style: normal;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .sldc-payment-options {
+    grid-template-columns: 1fr;
+  }
+}
