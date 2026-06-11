@@ -224,6 +224,7 @@ function App() {
         toggleAttendanceMeal={toggleAttendanceMeal}
       />
       <JoinSLDC
+        campers={campers}
         showJoinSLDC={showJoinSLDC}
         setShowJoinSLDC={setShowJoinSLDC} />
       <SignCampWaiver
