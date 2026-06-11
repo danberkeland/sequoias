@@ -18,7 +18,7 @@ import SignCampWaiver from "./components/SignCampWaiver";
 import PayCampFee from "./components/PayCampFee";
 import PaymentSummary from "./components/PaymentSummary";
 import CampInfo from "./components/CampInfo";
-import RegisteredCampersTable from "./components/RegisteredCampersTable";
+
 
 function App() {
   const client = useMemo(() => generateClient<Schema>(), []);
