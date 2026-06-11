@@ -1,10 +1,29 @@
-
+import packingListPdf from "../pdfs/2026_Camp_Pack_List.pdf";
+import itineraryPdf from "../pdfs/2026_Running_Camp_Schedule.pdf";
 
 type AddCampInfoProps = {
   showCampInfo: boolean;
   setShowCampInfo: (value: boolean | ((current: boolean) => boolean)) => void;
-
 };
+
+const campInfoLinks = [
+  {
+    label: "Camp Packing List",
+    href: packingListPdf,
+  },
+  {
+    label: "Camp Itinerary",
+    href: itineraryPdf,
+  },
+  {
+    label: "Camp Map",
+    href: "#",
+  },
+  {
+    label: "Emergency Contact Info",
+    href: "#",
+  },
+];
 
 function CampInfo({
   showCampInfo,
@@ -15,13 +34,9 @@ function CampInfo({
       <div className="section-header">
         <div>
           <h1>Step 5</h1>
-          <br></br>
+          <br />
           <h2>Prepare to Camp</h2>
-          <p>
-            {showCampInfo
-              ? "What to pack, Itinerary, Maps, Contact Info."
-              : "What to pack, Itinerary, Maps, Contact Info."}
-          </p>
+          <p>What to pack, Itinerary, Maps, Contact Info.</p>
         </div>
 
         <button
@@ -33,6 +48,21 @@ function CampInfo({
         </button>
       </div>
 
+      {showCampInfo && (
+        <div className="camp-info-links">
+          <h3>Camp Documents</h3>
+
+          <ul>
+            {campInfoLinks.map((link) => (
+              <li key={link.label}>
+                <a href={link.href} target="_blank" rel="noopener noreferrer">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }

@@ -43,6 +43,7 @@ function App() {
   const [emptySeatsToCamp, setEmptySeatsToCamp] = useState(0);
   const [emptySeatsFromCamp, setEmptySeatsFromCamp] = useState(0);
   const [emptySeatsDuringCamp, setEmptySeatsDuringCamp] = useState(0);
+  const [showCampInfo, setShowCampInfo] = useState(false);
 
   const canBeDriver =
     camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
@@ -222,7 +223,10 @@ function App() {
       <JoinSLDC />
       <SignCampWaiver />
       <PayCampFee />
-      <CampInfo />
+      <CampInfo
+        showCampInfo={showCampInfo}
+        setShowCampInfo={setShowCampInfo}
+      />
 
 
       <section className="card">
