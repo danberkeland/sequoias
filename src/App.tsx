@@ -194,6 +194,8 @@ function App() {
       />
 
       <AddCamperCard
+        campers={campers}
+        deleteCamper={deleteCamper}
         showAddCamper={showAddCamper}
         setShowAddCamper={setShowAddCamper}
         createCamper={createCamper}
@@ -241,10 +243,7 @@ function App() {
 
       <section className="card">
 
-        <RegisteredCampersTable
-          campers={campers}
-          deleteCamper={deleteCamper}
-        />
+        
         <PaymentSummary campers={campers} />
       </section>
     </main>

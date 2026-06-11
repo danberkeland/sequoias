@@ -3,6 +3,8 @@ import type { CamperType, Size } from "../types";
 import type { AttendanceSchedule } from "../constants/campSchedule";
 import AttendanceScheda from "./AttendanceScheda";
 import TransportationFields from "./TransportationFields";
+import RegisteredCampersTable from "./RegisteredCampersTable";
+import type { Camper } from "../types";
 
 type AddCamperCardProps = {
   showAddCamper: boolean;
@@ -42,6 +44,8 @@ type AddCamperCardProps = {
   handleFullCampChange: (value: boolean) => void;
   attendanceSchedule: AttendanceSchedule;
   toggleAttendanceMeal: (mealId: string) => void;
+  campers: Camper[];
+  deleteCamper: (id: string) => Promise<void>;
 };
 
 function AddCamperCard({
@@ -73,6 +77,8 @@ function AddCamperCard({
   handleFullCampChange,
   attendanceSchedule,
   toggleAttendanceMeal,
+    campers,
+  deleteCamper,
 }: AddCamperCardProps) {
   return (
     <section className="card">
@@ -229,8 +235,18 @@ function AddCamperCard({
             </button>
           </div>
         </form>
+        
+        
+        
       )}
+      <div className="embedded-table-section">
+      <RegisteredCampersTable
+        campers={campers}
+        deleteCamper={deleteCamper}
+      />
+    </div>
     </section>
+    
   );
 }
 
