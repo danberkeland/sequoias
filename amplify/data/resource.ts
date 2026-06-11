@@ -26,6 +26,33 @@ const schema = a.schema({
       empty_seats_during_camp: a.integer().default(0),
     })
     .authorization((allow) => [allow.owner()]),
+  SLDCApplication: a
+    .model({
+      camper_id: a.id().required(),
+
+      name: a.string().required(),
+      age: a.integer(),
+      birthdate: a.date(),
+
+      mailing_address: a.string(),
+      city_zip: a.string(),
+      telephone: a.string(),
+      email: a.email(),
+
+      races_or_info_1: a.string(),
+      races_or_info_2: a.string(),
+      races_or_info_3: a.string(),
+
+      waiver_accepted: a.boolean().default(false),
+      code_of_conduct_accepted: a.boolean().default(false),
+
+      signature_name: a.string(),
+      parent_signature_name: a.string(),
+
+      signed_at: a.datetime(),
+      application_version: a.string(),
+    })
+    .authorization((allow) => [allow.owner()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
