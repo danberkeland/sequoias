@@ -6,6 +6,15 @@ import type { Schema } from "../../amplify/data/resource";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
+type CamperStatusUpdate = {
+  isSLDCmember?: boolean;
+  isSLDCfee?: boolean;
+  isCampAccept?: boolean;
+  isCampFee?: boolean;
+  isCampWaiver?: boolean;
+};
+
+
 
 function AdminPage() {
   const client = useMemo(() => generateClient<Schema>(), []);
@@ -13,6 +22,26 @@ function AdminPage() {
 
   const [campers, setCampers] = useState<Camper[]>([]);
   const [applications, setApplications] = useState<SLDCApplication[]>([]);
+
+  async function updateCamperStatus(
+    camperId: string,
+    updates: CamperStatusUpdate
+  ) {
+    try {
+      const { errors } = await client.models.Camper.update({
+        id: camperId,
+        ...updates,
+      });
+
+      if (errors) {
+        console.error("Camper status update errors:", errors);
+        alert("There was a problem updating the camper status.");
+      }
+    } catch (error) {
+      console.error("Unexpected camper status update error:", error);
+      alert("Unexpected error updating camper status.");
+    }
+  }
 
   useEffect(() => {
     const camperSubscription =
@@ -126,6 +155,11 @@ function AdminPage() {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>SLDC Member</th>
+                  <th>SLDC Fee</th>
+                  <th>Camp Accepted</th>
+                  <th>Camp Fee</th>
+                  <th>Camp Waiver</th>
                   <th>Type</th>
                   <th>Attendance</th>
                   <th>SLDC Waiver</th>
@@ -142,6 +176,70 @@ function AdminPage() {
                         {camper.camper_first_name}{" "}
                         {camper.camper_last_name}
                       </strong>
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={camper.isSLDCmember ?? false}
+                        onChange={(event) =>
+                          updateCamperStatus(camper.id, {
+                            isSLDCmember: event.target.checked,
+                          })
+                        }
+                        aria-label={`SLDC membership for ${camper.camper_first_name}`}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={camper.isSLDCfee ?? false}
+                        onChange={(event) =>
+                          updateCamperStatus(camper.id, {
+                            isSLDCfee: event.target.checked,
+                          })
+                        }
+                        aria-label={`SLDC fee for ${camper.camper_first_name}`}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={camper.isCampAccept ?? false}
+                        onChange={(event) =>
+                          updateCamperStatus(camper.id, {
+                            isCampAccept: event.target.checked,
+                          })
+                        }
+                        aria-label={`Camp acceptance for ${camper.camper_first_name}`}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={camper.isCampFee ?? false}
+                        onChange={(event) =>
+                          updateCamperStatus(camper.id, {
+                            isCampFee: event.target.checked,
+                          })
+                        }
+                        aria-label={`Camp fee for ${camper.camper_first_name}`}
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={camper.isCampWaiver ?? false}
+                        onChange={(event) =>
+                          updateCamperStatus(camper.id, {
+                            isCampWaiver: event.target.checked,
+                          })
+                        }
+                        aria-label={`Camp waiver for ${camper.camper_first_name}`}
+                      />
                     </td>
 
                     <td>{camper.camper_type ?? "Not selected"}</td>
@@ -164,9 +262,8 @@ function AdminPage() {
 
                     <td>
                       {camper.is_driver
-                        ? `Driver — ${camper.empty_seats_to_camp ?? 0} up, ${
-                            camper.empty_seats_from_camp ?? 0
-                          } home`
+                        ? `Driver — ${camper.empty_seats_to_camp ?? 0} up, ${camper.empty_seats_from_camp ?? 0
+                        } home`
                         : "Not driving"}
                     </td>
                   </tr>
