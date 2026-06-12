@@ -24,11 +24,50 @@ const schema = a.schema({
       empty_seats_to_camp: a.integer().default(0),
       empty_seats_from_camp: a.integer().default(0),
       empty_seats_during_camp: a.integer().default(0),
+      isSLDCmember: a
+        .boolean()
+        .default(false)
+        .authorization((allow) => [
+          allow.owner().to(["read"]),
+          allow.group("ADMINS"),
+        ]),
+
+      isSLDCfee: a
+        .boolean()
+        .default(false)
+        .authorization((allow) => [
+          allow.owner().to(["read"]),
+          allow.group("ADMINS"),
+        ]),
+
+      isCampAccept: a
+        .boolean()
+        .default(false)
+        .authorization((allow) => [
+          allow.owner().to(["read"]),
+          allow.group("ADMINS"),
+        ]),
+
+      isCampFee: a
+        .boolean()
+        .default(false)
+        .authorization((allow) => [
+          allow.owner().to(["read"]),
+          allow.group("ADMINS"),
+        ]),
+
+      isCampWaiver: a
+        .boolean()
+        .default(false)
+        .authorization((allow) => [
+          allow.owner().to(["read"]),
+          allow.group("ADMINS"),
+        ]),
     })
     .authorization((allow) => [
-    allow.owner(),
-    allow.group("ADMINS").to(["read", "update", "delete"]),
-  ]),
+      allow.owner(),
+      allow.group("ADMINS").to(["read", "update", "delete"]),
+    ]),
   SLDCApplication: a
     .model({
       camper_id: a.id().required(),
@@ -56,9 +95,9 @@ const schema = a.schema({
       application_version: a.string(),
     })
     .authorization((allow) => [
-    allow.owner(),
-    allow.group("ADMINS").to(["read", "update", "delete"]),
-  ]),
+      allow.owner(),
+      allow.group("ADMINS").to(["read", "update", "delete"]),
+    ]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
