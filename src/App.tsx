@@ -49,7 +49,7 @@ function App() {
   const [showPayCampFee, setShowPayCampFee] = useState(false);
 
   const canBeDriver =
-    camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
+    camperType === "COACH" || camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
 
   useEffect(() => {
     async function loadUserAttributes() {

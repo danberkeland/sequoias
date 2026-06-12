@@ -135,7 +135,7 @@ function AddCamperCard({
                 <option value="ATHLETE">Athlete — $525</option>
                 <option value="PARENT">Parent — Included with Athlete</option>
                 <option value="NON_PARENT_ADULT_ALUMNI">
-                  Non-parent Adult/Alumni — $100
+                  2nd Athlete/Alumni/Other Adult — $100
                 </option>
                 <option value="SIBLING">
                   Sibling, Middle School or Younger — $50

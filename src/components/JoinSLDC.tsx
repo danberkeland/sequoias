@@ -160,9 +160,8 @@ function JoinSLDC({
     if (!selectedCamper) return;
 
     setName(
-      `${selectedCamper.camper_first_name ?? ""} ${
-        selectedCamper.camper_last_name ?? ""
-      }`.trim()
+      `${selectedCamper.camper_first_name ?? ""} ${selectedCamper.camper_last_name ?? ""
+        }`.trim()
     );
 
     const existingApplication = applications.find(
@@ -257,9 +256,9 @@ function JoinSLDC({
     try {
       const result = selectedApplication
         ? await client.models.SLDCApplication.update({
-            id: selectedApplication.id,
-            ...applicationData,
-          })
+          id: selectedApplication.id,
+          ...applicationData,
+        })
         : await client.models.SLDCApplication.create(applicationData);
 
       if (result.errors) {
@@ -306,21 +305,21 @@ function JoinSLDC({
       {showJoinSLDC && (
         <div className="sldc-panel">
           <div className="sldc-info-box">
-  <h3>SLDC Membership</h3>
-  <p>
-    The San Luis Distance Club membership application states that dues
-    are $25 per calendar year, pro-rated by quarter for new members,
-    with no charge for additional people in the same family.
-  </p>
-  <p>
-    Complete this form for each camper/member who needs to be covered
-    by the SLDC waiver.
-  </p>
-</div>
+            <h3>SLDC Membership</h3>
+            <p>
+              The San Luis Distance Club membership application states that dues
+              are $25 per calendar year, pro-rated by quarter for new members,
+              with no charge for additional people in the same family.
+            </p>
+            <p>
+              Complete this form for each camper/member who needs to be covered
+              by the SLDC waiver.
+            </p>
+          </div>
 
-<SLDCPaymentSection />
+          <SLDCPaymentSection />
 
-<form onSubmit={saveSLDCApplication} className="camper-form">
+          <form onSubmit={saveSLDCApplication} className="camper-form">
             <div className="form-grid">
               <label className="field field-full">
                 <span>Select Camper / Member</span>
@@ -348,16 +347,18 @@ function JoinSLDC({
                 />
               </label>
 
-              <label className="field">
-                <span>Age</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="120"
-                  value={age}
-                  onChange={(event) => setAge(event.target.value)}
-                />
-              </label>
+              {/*
+<label className="field">
+  <span>Age</span>
+  <input
+    type="number"
+    min="0"
+    max="120"
+    value={age}
+    onChange={(event) => setAge(event.target.value)}
+  />
+</label>
+*/}
 
               <label className="field">
                 <span>Birthdate</span>
