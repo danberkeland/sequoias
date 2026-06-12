@@ -27,18 +27,62 @@ function AdminPage() {
     camperId: string,
     updates: CamperStatusUpdate
   ) {
+    const originalCamper = campers.find((camper) => camper.id === camperId);
+
+    if (!originalCamper) {
+      return;
+    }
+
+    // Update the checkbox immediately
+    setCampers((currentCampers) =>
+      currentCampers.map((camper) =>
+        camper.id === camperId
+          ? ({ ...camper, ...updates } as Camper)
+          : camper
+      )
+    );
+
     try {
-      const { errors } = await client.models.Camper.update({
+      const { data, errors } = await client.models.Camper.update({
         id: camperId,
         ...updates,
       });
 
-      if (errors) {
+      if (errors?.length) {
         console.error("Camper status update errors:", errors);
+
+        // Roll back the checkbox
+        setCampers((currentCampers) =>
+          currentCampers.map((camper) =>
+            camper.id === camperId ? originalCamper : camper
+          )
+        );
+
         alert("There was a problem updating the camper status.");
+        return;
       }
+
+      console.log("Camper status updated:", data);
+
+      if (data) {
+  setCampers((currentCampers) =>
+    currentCampers.map((camper) =>
+      camper.id === camperId
+        ? ({ ...camper, ...updates } as Camper)
+        : camper
+    )
+  );
+}
     } catch (error) {
       console.error("Unexpected camper status update error:", error);
+
+      // Roll back the checkbox
+      setCampers((currentCampers) =>
+        currentCampers.map((camper) =>
+          camper.id === camperId ? originalCamper : camper
+        )
+      );
+
       alert("Unexpected error updating camper status.");
     }
   }
@@ -46,9 +90,28 @@ function AdminPage() {
   useEffect(() => {
     const camperSubscription =
       client.models.Camper.observeQuery().subscribe({
-        next: ({ items }) => {
+        next: ({ items, isSynced }) => {
+          console.log("Camper observer:", {
+            isSynced,
+            campers: items.map((camper) => ({
+              id: camper.id,
+              isSLDCmember: camper.isSLDCmember,
+              isSLDCfee: camper.isSLDCfee,
+              isCampAccept: camper.isCampAccept,
+              isCampFee: camper.isCampFee,
+              isCampWaiver: camper.isCampWaiver,
+            })),
+          });
+
+          // Do not overwrite the optimistic checkbox state
+          // with an earlier local snapshot.
+          if (!isSynced) {
+            return;
+          }
+
           setCampers([...items]);
         },
+
         error: (error) => {
           console.error("Admin camper query error:", error);
         },

@@ -29,7 +29,7 @@ const schema = a.schema({
         .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS"),
+          allow.group("ADMINS").to(["read", "update"]),
         ]),
 
       isSLDCfee: a
@@ -37,7 +37,7 @@ const schema = a.schema({
         .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS"),
+          allow.group("ADMINS").to(["read", "update"]),
         ]),
 
       isCampAccept: a
@@ -45,7 +45,7 @@ const schema = a.schema({
         .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS"),
+          allow.group("ADMINS").to(["read", "update"]),
         ]),
 
       isCampFee: a
@@ -53,7 +53,7 @@ const schema = a.schema({
         .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS"),
+          allow.group("ADMINS").to(["read", "update"]),
         ]),
 
       isCampWaiver: a
@@ -61,7 +61,7 @@ const schema = a.schema({
         .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS"),
+          allow.group("ADMINS").to(["read", "update"]),
         ]),
     })
     .authorization((allow) => [
