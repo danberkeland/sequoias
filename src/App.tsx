@@ -52,6 +52,31 @@ function App() {
     camperType === "COACH" || camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
 
   useEffect(() => {
+  if (!familyName.trim() || campers.length === 0) {
+    return;
+  }
+
+  const campersMissingFamilyName = campers.filter(
+    (camper) => !camper.family_name
+  );
+
+  if (campersMissingFamilyName.length === 0) {
+    return;
+  }
+
+  Promise.all(
+    campersMissingFamilyName.map((camper) =>
+      client.models.Camper.update({
+        id: camper.id,
+        family_name: familyName.trim(),
+      })
+    )
+  ).catch((error) => {
+    console.error("Could not backfill family name:", error);
+  });
+}, [campers, client, familyName]);
+
+  useEffect(() => {
     async function loadUserAttributes() {
       try {
         const attributes = await fetchUserAttributes();
@@ -106,6 +131,7 @@ function App() {
     const newCamper = {
       camper_first_name: camperFirstName.trim(),
       camper_last_name: camperLastName.trim(),
+      family_name: familyName.trim() || undefined,
       camper_type: camperType,
       shirt_size: shirtSize,
       sweatshirt_size: sweatshirtSize,

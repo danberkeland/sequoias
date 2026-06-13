@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
@@ -14,6 +14,16 @@ type CamperStatusUpdate = {
   isCampWaiver?: boolean;
 };
 
+type FamilyStatusField =
+  | "isSLDCfee"
+  | "isCampAccept"
+  | "isCampFee";
+
+type FamilyGroup = {
+  key: string;
+  name: string;
+  campers: Camper[];
+};
 
 
 function AdminPage() {
@@ -22,6 +32,95 @@ function AdminPage() {
 
   const [campers, setCampers] = useState<Camper[]>([]);
   const [applications, setApplications] = useState<SLDCApplication[]>([]);
+
+  const familyGroups = useMemo<FamilyGroup[]>(() => {
+  const groups = new Map<string, FamilyGroup>();
+
+  campers.forEach((camper) => {
+    /*
+     * Use owner as the true grouping key. It identifies the
+     * authenticated account that created the camper.
+     *
+     * The fallback handles legacy records if owner is unavailable.
+     */
+    const familyKey =
+      camper.owner ??
+      camper.family_name ??
+      camper.camper_last_name ??
+      camper.id;
+
+    const rawFamilyName =
+      camper.family_name?.trim() ||
+      camper.camper_last_name?.trim() ||
+      "Unknown";
+
+    const displayName = rawFamilyName
+      .toLowerCase()
+      .endsWith("family")
+      ? rawFamilyName
+      : `${rawFamilyName} Family`;
+
+    const existingGroup = groups.get(familyKey);
+
+    if (existingGroup) {
+      existingGroup.campers.push(camper);
+    } else {
+      groups.set(familyKey, {
+        key: familyKey,
+        name: displayName,
+        campers: [camper],
+      });
+    }
+  });
+
+  return Array.from(groups.values()).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+}, [campers]);
+
+function isFamilyStatusChecked(
+  familyCampers: Camper[],
+  field: FamilyStatusField
+) {
+  return (
+    familyCampers.length > 0 &&
+    familyCampers.every((camper) => camper[field] === true)
+  );
+}
+
+async function updateFamilyStatus(
+  familyCampers: Camper[],
+  field: FamilyStatusField,
+  checked: boolean
+) {
+  let updates: CamperStatusUpdate;
+
+  switch (field) {
+    case "isSLDCfee":
+      updates = {
+        isSLDCfee: checked,
+      };
+      break;
+
+    case "isCampAccept":
+      updates = {
+        isCampAccept: checked,
+      };
+      break;
+
+    case "isCampFee":
+      updates = {
+        isCampFee: checked,
+      };
+      break;
+  }
+
+  await Promise.all(
+    familyCampers.map((camper) =>
+      updateCamperStatus(camper.id, updates)
+    )
+  );
+}
 
   async function updateCamperStatus(
     camperId: string,
@@ -232,106 +331,189 @@ function AdminPage() {
               </thead>
 
               <tbody>
-                {campers.map((camper) => (
-                  <tr key={camper.id}>
-                    <td>
-                      <strong>
-                        {camper.camper_first_name}{" "}
-                        {camper.camper_last_name}
-                      </strong>
-                    </td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={camper.isSLDCmember ?? false}
-                        onChange={(event) =>
-                          updateCamperStatus(camper.id, {
-                            isSLDCmember: event.target.checked,
-                          })
-                        }
-                        aria-label={`SLDC membership for ${camper.camper_first_name}`}
-                      />
-                    </td>
+  {familyGroups.map((family) => (
+    <Fragment key={family.key}>
+      <tr className="family-group-row">
+        <td colSpan={11}>
+          <div className="family-group-header">
+            <div>
+              <strong>{family.name}</strong>
 
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={camper.isSLDCfee ?? false}
-                        onChange={(event) =>
-                          updateCamperStatus(camper.id, {
-                            isSLDCfee: event.target.checked,
-                          })
-                        }
-                        aria-label={`SLDC fee for ${camper.camper_first_name}`}
-                      />
-                    </td>
+              <span className="family-member-count">
+                {family.campers.length === 1
+                  ? "1 registered member"
+                  : `${family.campers.length} registered members`}
+              </span>
+            </div>
 
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={camper.isCampAccept ?? false}
-                        onChange={(event) =>
-                          updateCamperStatus(camper.id, {
-                            isCampAccept: event.target.checked,
-                          })
-                        }
-                        aria-label={`Camp acceptance for ${camper.camper_first_name}`}
-                      />
-                    </td>
+            <div className="family-group-statuses">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isFamilyStatusChecked(
+                    family.campers,
+                    "isSLDCfee"
+                  )}
+                  onChange={(event) =>
+                    updateFamilyStatus(
+                      family.campers,
+                      "isSLDCfee",
+                      event.target.checked
+                    )
+                  }
+                />
 
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={camper.isCampFee ?? false}
-                        onChange={(event) =>
-                          updateCamperStatus(camper.id, {
-                            isCampFee: event.target.checked,
-                          })
-                        }
-                        aria-label={`Camp fee for ${camper.camper_first_name}`}
-                      />
-                    </td>
+                <span>SLDC Fee</span>
+              </label>
 
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={camper.isCampWaiver ?? false}
-                        onChange={(event) =>
-                          updateCamperStatus(camper.id, {
-                            isCampWaiver: event.target.checked,
-                          })
-                        }
-                        aria-label={`Camp waiver for ${camper.camper_first_name}`}
-                      />
-                    </td>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isFamilyStatusChecked(
+                    family.campers,
+                    "isCampAccept"
+                  )}
+                  onChange={(event) =>
+                    updateFamilyStatus(
+                      family.campers,
+                      "isCampAccept",
+                      event.target.checked
+                    )
+                  }
+                />
 
-                    <td>{camper.camper_type ?? "Not selected"}</td>
+                <span>Camp Accepted</span>
+              </label>
 
-                    <td>
-                      {camper.attending_full_camp
-                        ? "Full camp"
-                        : "Partial camp"}
-                    </td>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isFamilyStatusChecked(
+                    family.campers,
+                    "isCampFee"
+                  )}
+                  onChange={(event) =>
+                    updateFamilyStatus(
+                      family.campers,
+                      "isCampFee",
+                      event.target.checked
+                    )
+                  }
+                />
 
-                    <td>
-                      {camperHasSLDCApplication(camper.id)
-                        ? "Submitted"
-                        : "Not submitted"}
-                    </td>
+                <span>Camp Fee</span>
+              </label>
+            </div>
+          </div>
+        </td>
+      </tr>
 
-                    <td>
-                      {camper.special_dietary_needs || "None"}
-                    </td>
+      {family.campers.map((camper) => (
+        <tr key={camper.id}>
+          <td className="family-camper-name">
+            <strong>
+              {camper.camper_first_name}{" "}
+              {camper.camper_last_name}
+            </strong>
+          </td>
 
-                    <td>
-                      {camper.is_driver
-                        ? `Driver — ${camper.empty_seats_to_camp ?? 0} up, ${camper.empty_seats_from_camp ?? 0
-                        } home`
-                        : "Not driving"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+          <td>
+            <input
+              type="checkbox"
+              checked={camper.isSLDCmember ?? false}
+              onChange={(event) =>
+                updateCamperStatus(camper.id, {
+                  isSLDCmember: event.target.checked,
+                })
+              }
+              aria-label={`SLDC membership for ${camper.camper_first_name}`}
+            />
+          </td>
+
+          <td>
+            <input
+              type="checkbox"
+              checked={camper.isSLDCfee ?? false}
+              onChange={(event) =>
+                updateCamperStatus(camper.id, {
+                  isSLDCfee: event.target.checked,
+                })
+              }
+              aria-label={`SLDC fee for ${camper.camper_first_name}`}
+            />
+          </td>
+
+          <td>
+            <input
+              type="checkbox"
+              checked={camper.isCampAccept ?? false}
+              onChange={(event) =>
+                updateCamperStatus(camper.id, {
+                  isCampAccept: event.target.checked,
+                })
+              }
+              aria-label={`Camp acceptance for ${camper.camper_first_name}`}
+            />
+          </td>
+
+          <td>
+            <input
+              type="checkbox"
+              checked={camper.isCampFee ?? false}
+              onChange={(event) =>
+                updateCamperStatus(camper.id, {
+                  isCampFee: event.target.checked,
+                })
+              }
+              aria-label={`Camp fee for ${camper.camper_first_name}`}
+            />
+          </td>
+
+          <td>
+            <input
+              type="checkbox"
+              checked={camper.isCampWaiver ?? false}
+              onChange={(event) =>
+                updateCamperStatus(camper.id, {
+                  isCampWaiver: event.target.checked,
+                })
+              }
+              aria-label={`Camp waiver for ${camper.camper_first_name}`}
+            />
+          </td>
+
+          <td>{camper.camper_type ?? "Not selected"}</td>
+
+          <td>
+            {camper.attending_full_camp
+              ? "Full camp"
+              : "Partial camp"}
+          </td>
+
+          <td>
+            {camperHasSLDCApplication(camper.id)
+              ? "Submitted"
+              : "Not submitted"}
+          </td>
+
+          <td>
+            {camper.special_dietary_needs || "None"}
+          </td>
+
+          <td>
+            {camper.is_driver
+              ? `Driver — ${
+                  camper.empty_seats_to_camp ?? 0
+                } up, ${
+                  camper.empty_seats_from_camp ?? 0
+                } home`
+              : "Not driving"}
+          </td>
+        </tr>
+      ))}
+    </Fragment>
+  ))}
+</tbody>
             </table>
           </div>
         )}

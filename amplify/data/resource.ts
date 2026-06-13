@@ -5,6 +5,7 @@ const schema = a.schema({
     .model({
       camper_first_name: a.string().required(),
       camper_last_name: a.string().required(),
+      family_name: a.string(),
 
       camper_type: a.enum([
         "ATHLETE",
