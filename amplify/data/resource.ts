@@ -26,42 +26,37 @@ const schema = a.schema({
       empty_seats_during_camp: a.integer().default(0),
       isSLDCmember: a
         .boolean()
-        .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["read", "update"]),
+          allow.group("ADMINS").to(["create", "read", "update"]),
         ]),
 
       isSLDCfee: a
         .boolean()
-        .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["read", "update"]),
+          allow.group("ADMINS").to(["create", "read", "update"]),
         ]),
 
       isCampAccept: a
         .boolean()
-        .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["read", "update"]),
+          allow.group("ADMINS").to(["create", "read", "update"]),
         ]),
 
       isCampFee: a
         .boolean()
-        .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["read", "update"]),
+          allow.group("ADMINS").to(["create", "read", "update"]),
         ]),
 
       isCampWaiver: a
         .boolean()
-        .default(false)
         .authorization((allow) => [
           allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["read", "update"]),
+          allow.group("ADMINS").to(["create", "read", "update"]),
         ]),
     })
     .authorization((allow) => [
