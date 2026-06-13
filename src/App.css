@@ -905,3 +905,18 @@ textarea {
   background: #f8fafc;
   border-color: #cbd5e1;
 }
+
+/* Optional: adds separation between each family member inside the waiver box. */
+.waiver-member-entry {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.waiver-member-entry:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.waiver-member-entry h4 {
+  margin: 0 0 0.75rem;
+}

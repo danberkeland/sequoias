@@ -1,6 +1,30 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
+  CampWaiver: a
+  .model({
+    camper_id: a.id().required(),
+    participant_name: a.string().required(),
+    participant_is_minor: a.boolean().required(),
+    participant_signature_name: a.string().required(),
+    parent_guardian_name: a.string(),
+    parent_guardian_signature_name: a.string(),
+    medical_conditions: a.string().required(),
+    emergency_contact_1_name: a.string().required(),
+    emergency_contact_1_phone: a.string().required(),
+    emergency_contact_1_email: a.string(),
+    emergency_contact_2_name: a.string(),
+    emergency_contact_2_phone: a.string(),
+    emergency_contact_2_email: a.string(),
+    medical_insurance_information: a.string().required(),
+    risk_accepted: a.boolean().required(),
+    medical_care_accepted: a.boolean().required(),
+    electronic_signature_accepted: a.boolean().required(),
+    signed_at: a.datetime().required(),
+    waiver_version: a.string().required(),
+  })
+  .authorization((allow) => [allow.owner()]),
+
   Camper: a
     .model({
       camper_first_name: a.string().required(),

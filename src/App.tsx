@@ -20,6 +20,7 @@ import PaymentSummary from "./components/PaymentSummary";
 import CampInfo from "./components/CampInfo";
 
 
+
 function App() {
   const client = useMemo(() => generateClient<Schema>(), []);
   const { user, signOut } = useAuthenticator();
@@ -47,6 +48,7 @@ function App() {
   const [showJoinSLDC, setShowJoinSLDC] = useState(false);
   const [showSignCampWaiver, setShowSignCampWaiver] = useState(false);
   const [showPayCampFee, setShowPayCampFee] = useState(false);
+  
 
   const canBeDriver =
     camperType === "COACH" || camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
@@ -256,8 +258,10 @@ function App() {
         showJoinSLDC={showJoinSLDC}
         setShowJoinSLDC={setShowJoinSLDC} />
       <SignCampWaiver
+        campers={campers}
         showSignCampWaiver={showSignCampWaiver}
-        setShowSignCampWaiver={setShowSignCampWaiver} />
+        setShowSignCampWaiver={setShowSignCampWaiver}
+      />
       <PayCampFee
         showPayCampFee={showPayCampFee}
         setShowPayCampFee={setShowPayCampFee} />
