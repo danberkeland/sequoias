@@ -766,3 +766,142 @@ textarea {
     gap: 12px;
   }
 }
+
+.sldc-paid-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  border-radius: 18px;
+}
+
+.sldc-paid-box h3 {
+  margin: 0 0 8px;
+  color: #166534;
+}
+
+.sldc-paid-box p {
+  margin: 6px 0 0;
+  color: #166534;
+  line-height: 1.5;
+}
+
+.sldc-paid-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: white;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.sldc-application-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 18px;
+}
+
+.sldc-application-status h3 {
+  margin: 0 0 8px;
+}
+
+.sldc-application-status p {
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+.sldc-application-status.is-pending {
+  background: #fffbeb;
+  border: 1px solid #facc15;
+  color: #713f12;
+}
+
+.sldc-application-status.is-pending h3 {
+  color: #854d0e;
+}
+
+.sldc-application-status.is-approved {
+  background: #ecfdf5;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.sldc-application-status.is-approved h3 {
+  color: #166534;
+}
+
+.sldc-status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.is-pending .sldc-status-icon {
+  background: #eab308;
+}
+
+.is-approved .sldc-status-icon {
+  background: #16a34a;
+}
+
+.sldc-summary-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.sldc-summary-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 11px;
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  line-height: 1.2;
+}
+
+.sldc-summary-label {
+  opacity: 0.8;
+}
+
+.sldc-summary-status.is-complete {
+  color: #166534;
+  background: #ecfdf5;
+  border-color: #86efac;
+}
+
+.sldc-summary-status.is-pending {
+  color: #854d0e;
+  background: #fffbeb;
+  border-color: #facc15;
+}
+
+.sldc-summary-status.is-incomplete {
+  color: #9a3412;
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.sldc-summary-status.is-neutral {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}

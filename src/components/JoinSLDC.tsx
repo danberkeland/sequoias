@@ -143,6 +143,71 @@ function JoinSLDC({
   const [signatureName, setSignatureName] = useState("");
   const [parentSignatureName, setParentSignatureName] = useState("");
 
+  const submittedApplicationCount = campers.filter((camper) =>
+  applications.some(
+    (application) => application.camper_id === camper.id
+  )
+).length;
+
+
+
+const allApplicationsSubmitted =
+  campers.length > 0 &&
+  submittedApplicationCount === campers.length;
+
+const allSLDCMembersApproved =
+  campers.length > 0 &&
+  campers.every((camper) => camper.isSLDCmember === true);
+
+const isSLDCPaid =
+  campers.length > 0 &&
+  campers.every((camper) => camper.isSLDCfee === true);
+
+const applicationStatus =
+  campers.length === 0
+    ? {
+        label: "Applications",
+        text: "Add campers first",
+        className: "is-neutral",
+      }
+    : allApplicationsSubmitted && allSLDCMembersApproved
+      ? {
+          label: "Applications",
+          text: "Approved",
+          className: "is-complete",
+        }
+      : allApplicationsSubmitted
+        ? {
+            label: "Applications",
+            text: "Pending review",
+            className: "is-pending",
+          }
+        : {
+            label: "Applications",
+            text: `${submittedApplicationCount} of ${campers.length} submitted`,
+            className: "is-incomplete",
+          };
+
+const paymentStatus =
+  campers.length === 0
+    ? {
+        label: "SLDC Dues",
+        text: "Add campers first",
+        className: "is-neutral",
+      }
+    : isSLDCPaid
+      ? {
+          label: "SLDC Dues",
+          text: "Paid",
+          className: "is-complete",
+        }
+      : {
+          label: "SLDC Dues",
+          text: "Payment needed",
+          className: "is-incomplete",
+        };
+
+  
   useEffect(() => {
     const sub = client.models.SLDCApplication.observeQuery().subscribe({
       next: ({ items }) => {
@@ -191,6 +256,14 @@ function JoinSLDC({
   const selectedApplication = applications.find(
     (application) => application.camper_id === selectedCamperId
   );
+
+  const membershipComplete =
+  isSLDCPaid &&
+  allApplicationsSubmitted &&
+  allSLDCMembersApproved;
+
+  
+
 
   function resetForm() {
     setSelectedCamperId("");
@@ -283,22 +356,50 @@ function JoinSLDC({
     <section className="card">
       <div className="section-header">
         <div>
-          <h1>Step 2</h1>
-          <br />
-          <h2>Join San Luis Distance Club</h2>
-          <p>
-            {showJoinSLDC
-              ? "Complete the SLDC application and waiver for each camper."
-              : "Only one SLDC membership is required per family, but each member must complete the waiver."}
-          </p>
-        </div>
+  <h1>Step 2</h1>
+  <br />
+
+  <h2>Join San Luis Distance Club</h2>
+
+  <p>
+    {showJoinSLDC
+      ? "Complete the SLDC application and waiver for each camper."
+      : "Only one SLDC membership is required per family, but each member must complete the waiver."}
+  </p>
+
+  <div className="sldc-summary-statuses">
+    <div
+      className={`sldc-summary-status ${paymentStatus.className}`}
+    >
+      <span className="sldc-summary-label">
+        {paymentStatus.label}
+      </span>
+
+      <strong>{paymentStatus.text}</strong>
+    </div>
+
+    <div
+      className={`sldc-summary-status ${applicationStatus.className}`}
+    >
+      <span className="sldc-summary-label">
+        {applicationStatus.label}
+      </span>
+
+      <strong>{applicationStatus.text}</strong>
+    </div>
+  </div>
+</div>
 
         <button
           type="button"
           className="primary-button"
           onClick={() => setShowJoinSLDC((current) => !current)}
         >
-          {showJoinSLDC ? "Close" : "+ Join SLDC"}
+          {showJoinSLDC
+  ? "Close"
+  : membershipComplete
+    ? "View Applications"
+    : "+ Join SLDC"}
         </button>
       </div>
 
@@ -317,7 +418,60 @@ function JoinSLDC({
             </p>
           </div>
 
-          <SLDCPaymentSection />
+         {isSLDCPaid ? (
+  <div className="sldc-paid-box">
+    <div className="sldc-paid-icon" aria-hidden="true">
+      ✓
+    </div>
+
+    <div>
+      <h3>SLDC Dues Paid</h3>
+      <p>
+        Your family’s SLDC dues have been received and your membership payment
+        is up to date.
+      </p>
+      <p>
+        Each participating family member must still complete their individual
+        SLDC application and waiver below.
+      </p>
+    </div>
+  </div>
+) : (
+  <SLDCPaymentSection />
+)}
+{allApplicationsSubmitted && allSLDCMembersApproved ? (
+  <div className="sldc-application-status is-approved">
+    <div className="sldc-status-icon" aria-hidden="true">
+      ✓
+    </div>
+
+    <div>
+      <h3>SLDC Membership Complete</h3>
+      <p>
+        All family applications have been received and reviewed by SLDC. Your
+        family’s SLDC membership is complete and up to date.
+      </p>
+    </div>
+  </div>
+) : allApplicationsSubmitted ? (
+  <div className="sldc-application-status is-pending">
+    <div className="sldc-status-icon" aria-hidden="true">
+      !
+    </div>
+
+    <div>
+      <h3>Applications Pending Review</h3>
+      <p>
+        All family applications have been submitted and are pending review by
+        SLDC. No additional applications are required at this time.
+      </p>
+      <p>
+        This page may not update until an SLDC administrator has reviewed the
+        applications.
+      </p>
+    </div>
+  </div>
+) : null}
 
           <form onSubmit={saveSLDCApplication} className="camper-form">
             <div className="form-grid">
