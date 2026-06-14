@@ -3,6 +3,11 @@ import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
+import {
+  CAMP_DAYS,
+  CAMP_MEALS,
+  type AttendanceSchedule,
+} from "../constants/campSchedule";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
@@ -25,6 +30,36 @@ type FamilyGroup = {
   campers: Camper[];
 };
 
+function parseAttendanceSchedule(
+  value: Camper["attendance_schedule"]
+): AttendanceSchedule | null {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as AttendanceSchedule;
+    } catch (error) {
+      console.error(
+        "Could not parse camper attendance schedule:",
+        error
+      );
+
+      return null;
+    }
+  }
+
+  if (
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    return value as AttendanceSchedule;
+  }
+
+  return null;
+}
+
 
 function AdminPage() {
   const client = useMemo(() => generateClient<Schema>(), []);
@@ -33,94 +68,185 @@ function AdminPage() {
   const [campers, setCampers] = useState<Camper[]>([]);
   const [applications, setApplications] = useState<SLDCApplication[]>([]);
 
-  const familyGroups = useMemo<FamilyGroup[]>(() => {
-  const groups = new Map<string, FamilyGroup>();
+  const mealSummary = useMemo(() => {
+    const totals: Record<string, number> = {};
 
-  campers.forEach((camper) => {
-    /*
-     * Use owner as the true grouping key. It identifies the
-     * authenticated account that created the camper.
-     *
-     * The fallback handles legacy records if owner is unavailable.
-     */
-    const familyKey =
-      camper.owner ??
-      camper.family_name ??
-      camper.camper_last_name ??
-      camper.id;
+    CAMP_MEALS.forEach((meal) => {
+      totals[meal.id] = 0;
+    });
 
-    const rawFamilyName =
-      camper.family_name?.trim() ||
-      camper.camper_last_name?.trim() ||
-      "Unknown";
 
-    const displayName = rawFamilyName
-      .toLowerCase()
-      .endsWith("family")
-      ? rawFamilyName
-      : `${rawFamilyName} Family`;
 
-    const existingGroup = groups.get(familyKey);
+    let incompleteAttendanceRecords = 0;
 
-    if (existingGroup) {
-      existingGroup.campers.push(camper);
-    } else {
-      groups.set(familyKey, {
-        key: familyKey,
-        name: displayName,
-        campers: [camper],
+
+
+    campers.forEach((camper) => {
+      // Full-camp campers attend every scheduled meal.
+      if (camper.attending_full_camp === true) {
+        CAMP_MEALS.forEach((meal) => {
+          totals[meal.id] += 1;
+        });
+
+        return;
+      }
+
+
+
+      const schedule = parseAttendanceSchedule(
+        camper.attendance_schedule
+      );
+
+      if (!schedule) {
+        incompleteAttendanceRecords += 1;
+        return;
+      }
+
+      CAMP_MEALS.forEach((meal) => {
+        if (schedule[meal.id] === true) {
+          totals[meal.id] += 1;
+        }
       });
-    }
-  });
+    });
 
-  return Array.from(groups.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
+    return {
+      totals,
+      incompleteAttendanceRecords,
+    };
+  }, [campers]);
+
+  const transportationSummary = useMemo(() => {
+  const drivers = campers
+    .filter((camper) => camper.is_driver === true)
+    .sort((a, b) => {
+      const lastNameComparison = (
+        a.camper_last_name ?? ""
+      ).localeCompare(b.camper_last_name ?? "");
+
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
+      }
+
+      return (a.camper_first_name ?? "").localeCompare(
+        b.camper_first_name ?? ""
+      );
+    });
+
+  const totals = drivers.reduce(
+    (currentTotals, driver) => ({
+      toCamp:
+        currentTotals.toCamp +
+        Math.max(0, driver.empty_seats_to_camp ?? 0),
+
+      fromCamp:
+        currentTotals.fromCamp +
+        Math.max(0, driver.empty_seats_from_camp ?? 0),
+
+      duringCamp:
+        currentTotals.duringCamp +
+        Math.max(0, driver.empty_seats_during_camp ?? 0),
+    }),
+    {
+      toCamp: 0,
+      fromCamp: 0,
+      duringCamp: 0,
+    }
   );
+
+  return {
+    drivers,
+    totals,
+  };
 }, [campers]);
 
-function isFamilyStatusChecked(
-  familyCampers: Camper[],
-  field: FamilyStatusField
-) {
-  return (
-    familyCampers.length > 0 &&
-    familyCampers.every((camper) => camper[field] === true)
-  );
-}
+  const familyGroups = useMemo<FamilyGroup[]>(() => {
+    const groups = new Map<string, FamilyGroup>();
 
-async function updateFamilyStatus(
-  familyCampers: Camper[],
-  field: FamilyStatusField,
-  checked: boolean
-) {
-  let updates: CamperStatusUpdate;
+    campers.forEach((camper) => {
+      /*
+       * Use owner as the true grouping key. It identifies the
+       * authenticated account that created the camper.
+       *
+       * The fallback handles legacy records if owner is unavailable.
+       */
+      const familyKey =
+        camper.owner ??
+        camper.family_name ??
+        camper.camper_last_name ??
+        camper.id;
 
-  switch (field) {
-    case "isSLDCfee":
-      updates = {
-        isSLDCfee: checked,
-      };
-      break;
+      const rawFamilyName =
+        camper.family_name?.trim() ||
+        camper.camper_last_name?.trim() ||
+        "Unknown";
 
-    case "isCampAccept":
-      updates = {
-        isCampAccept: checked,
-      };
-      break;
+      const displayName = rawFamilyName
+        .toLowerCase()
+        .endsWith("family")
+        ? rawFamilyName
+        : `${rawFamilyName} Family`;
 
-    case "isCampFee":
-      updates = {
-        isCampFee: checked,
-      };
-      break;
+      const existingGroup = groups.get(familyKey);
+
+      if (existingGroup) {
+        existingGroup.campers.push(camper);
+      } else {
+        groups.set(familyKey, {
+          key: familyKey,
+          name: displayName,
+          campers: [camper],
+        });
+      }
+    });
+
+    return Array.from(groups.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  }, [campers]);
+
+  function isFamilyStatusChecked(
+    familyCampers: Camper[],
+    field: FamilyStatusField
+  ) {
+    return (
+      familyCampers.length > 0 &&
+      familyCampers.every((camper) => camper[field] === true)
+    );
   }
 
-  await Promise.all(
-    familyCampers.map((camper) =>
-      updateCamperStatus(camper.id, updates)
-    )
-  );
-}
+  async function updateFamilyStatus(
+    familyCampers: Camper[],
+    field: FamilyStatusField,
+    checked: boolean
+  ) {
+    let updates: CamperStatusUpdate;
+
+    switch (field) {
+      case "isSLDCfee":
+        updates = {
+          isSLDCfee: checked,
+        };
+        break;
+
+      case "isCampAccept":
+        updates = {
+          isCampAccept: checked,
+        };
+        break;
+
+      case "isCampFee":
+        updates = {
+          isCampFee: checked,
+        };
+        break;
+    }
+
+    await Promise.all(
+      familyCampers.map((camper) =>
+        updateCamperStatus(camper.id, updates)
+      )
+    );
+  }
 
   async function updateCamperStatus(
     camperId: string,
@@ -164,14 +290,14 @@ async function updateFamilyStatus(
       console.log("Camper status updated:", data);
 
       if (data) {
-  setCampers((currentCampers) =>
-    currentCampers.map((camper) =>
-      camper.id === camperId
-        ? ({ ...camper, ...updates } as Camper)
-        : camper
-    )
-  );
-}
+        setCampers((currentCampers) =>
+          currentCampers.map((camper) =>
+            camper.id === camperId
+              ? ({ ...camper, ...updates } as Camper)
+              : camper
+          )
+        );
+      }
     } catch (error) {
       console.error("Unexpected camper status update error:", error);
 
@@ -271,8 +397,8 @@ async function updateFamilyStatus(
             <h2>Camp Overview</h2>
             <p>Current registration totals</p>
           </div>
+          
         </div>
-
         <div className="admin-summary-grid">
           <div className="admin-summary-box">
             <span>Registered Campers</span>
@@ -295,6 +421,161 @@ async function updateFamilyStatus(
             </strong>
           </div>
         </div>
+        <section className="card">
+          <div className="section-header">
+            <div>
+              <h2>Camp Meal Counts</h2>
+              <p>
+                Number of registered campers expected at each meal
+              </p>
+            </div>
+          </div>
+
+          {campers.length === 0 ? (
+            <div className="empty-state">
+              <h3>No campers registered</h3>
+              <p>Meal totals will appear here.</p>
+            </div>
+          ) : (
+            <>
+              <div className="meal-count-summary">
+                <span>Registered campers</span>
+                <strong>{campers.length}</strong>
+              </div>
+
+              <div className="table-wrap">
+                <table className="meal-count-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Breakfast</th>
+                      <th>Lunch</th>
+                      <th>Dinner</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {CAMP_DAYS.map((day) => (
+                      <tr key={day.date}>
+                        <th scope="row">{day.date}</th>
+
+                        {day.meals.map((meal, index) => (
+                          <td key={meal?.id ?? `${day.date}-${index}`}>
+                            {meal ? (
+                              <strong>
+                                {mealSummary.totals[meal.id] ?? 0}
+                              </strong>
+                            ) : (
+                              <span className="no-meal">—</span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {mealSummary.incompleteAttendanceRecords > 0 && (
+                <div className="meal-count-warning">
+                  <strong>Attendance information incomplete:</strong>{" "}
+                  {mealSummary.incompleteAttendanceRecords === 1
+                    ? "1 partial-camp camper does not have a readable meal schedule."
+                    : `${mealSummary.incompleteAttendanceRecords} partial-camp campers do not have readable meal schedules.`}
+                </div>
+              )}
+            </>
+          )}
+        </section>
+       <section className="card">
+  <div className="section-header">
+    <div>
+      <h2>Camp Drivers</h2>
+      <p>
+        Available passenger spaces offered by each driver
+      </p>
+    </div>
+  </div>
+
+  {transportationSummary.drivers.length === 0 ? (
+    <div className="empty-state">
+      <h3>No drivers registered</h3>
+      <p>
+        Drivers will appear here once transportation
+        information has been submitted.
+      </p>
+    </div>
+  ) : (
+    <div className="table-wrap">
+      <table className="driver-table">
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Going Up</th>
+            <th>Coming Down</th>
+            <th>At Camp</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {transportationSummary.drivers.map((driver) => (
+            <tr key={driver.id}>
+              <td>
+                <strong>
+                  {driver.camper_first_name}{" "}
+                  {driver.camper_last_name}
+                </strong>
+
+                {driver.family_name && (
+                  <span className="driver-family-name">
+                    {driver.family_name} Family
+                  </span>
+                )}
+              </td>
+
+              <td>
+                {driver.empty_seats_to_camp ?? 0}
+              </td>
+
+              <td>
+                {driver.empty_seats_from_camp ?? 0}
+              </td>
+
+              <td>
+                {driver.empty_seats_during_camp ?? 0}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th>Total Open Seats</th>
+
+            <td>
+              <strong>
+                {transportationSummary.totals.toCamp}
+              </strong>
+            </td>
+
+            <td>
+              <strong>
+                {transportationSummary.totals.fromCamp}
+              </strong>
+            </td>
+
+            <td>
+              <strong>
+                {transportationSummary.totals.duringCamp}
+              </strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  )}
+</section>
+        
       </section>
 
       <section className="card">
@@ -331,189 +612,187 @@ async function updateFamilyStatus(
               </thead>
 
               <tbody>
-  {familyGroups.map((family) => (
-    <Fragment key={family.key}>
-      <tr className="family-group-row">
-        <td colSpan={11}>
-          <div className="family-group-header">
-            <div>
-              <strong>{family.name}</strong>
+                {familyGroups.map((family) => (
+                  <Fragment key={family.key}>
+                    <tr className="family-group-row">
+                      <td colSpan={11}>
+                        <div className="family-group-header">
+                          <div>
+                            <strong>{family.name}</strong>
 
-              <span className="family-member-count">
-                {family.campers.length === 1
-                  ? "1 registered member"
-                  : `${family.campers.length} registered members`}
-              </span>
-            </div>
+                            <span className="family-member-count">
+                              {family.campers.length === 1
+                                ? "1 registered member"
+                                : `${family.campers.length} registered members`}
+                            </span>
+                          </div>
 
-            <div className="family-group-statuses">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isFamilyStatusChecked(
-                    family.campers,
-                    "isSLDCfee"
-                  )}
-                  onChange={(event) =>
-                    updateFamilyStatus(
-                      family.campers,
-                      "isSLDCfee",
-                      event.target.checked
-                    )
-                  }
-                />
+                          <div className="family-group-statuses">
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={isFamilyStatusChecked(
+                                  family.campers,
+                                  "isSLDCfee"
+                                )}
+                                onChange={(event) =>
+                                  updateFamilyStatus(
+                                    family.campers,
+                                    "isSLDCfee",
+                                    event.target.checked
+                                  )
+                                }
+                              />
 
-                <span>SLDC Fee</span>
-              </label>
+                              <span>SLDC Fee</span>
+                            </label>
 
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isFamilyStatusChecked(
-                    family.campers,
-                    "isCampAccept"
-                  )}
-                  onChange={(event) =>
-                    updateFamilyStatus(
-                      family.campers,
-                      "isCampAccept",
-                      event.target.checked
-                    )
-                  }
-                />
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={isFamilyStatusChecked(
+                                  family.campers,
+                                  "isCampAccept"
+                                )}
+                                onChange={(event) =>
+                                  updateFamilyStatus(
+                                    family.campers,
+                                    "isCampAccept",
+                                    event.target.checked
+                                  )
+                                }
+                              />
 
-                <span>Camp Accepted</span>
-              </label>
+                              <span>Camp Accepted</span>
+                            </label>
 
-              <label>
-                <input
-                  type="checkbox"
-                  checked={isFamilyStatusChecked(
-                    family.campers,
-                    "isCampFee"
-                  )}
-                  onChange={(event) =>
-                    updateFamilyStatus(
-                      family.campers,
-                      "isCampFee",
-                      event.target.checked
-                    )
-                  }
-                />
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={isFamilyStatusChecked(
+                                  family.campers,
+                                  "isCampFee"
+                                )}
+                                onChange={(event) =>
+                                  updateFamilyStatus(
+                                    family.campers,
+                                    "isCampFee",
+                                    event.target.checked
+                                  )
+                                }
+                              />
 
-                <span>Camp Fee</span>
-              </label>
-            </div>
-          </div>
-        </td>
-      </tr>
+                              <span>Camp Fee</span>
+                            </label>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
 
-      {family.campers.map((camper) => (
-        <tr key={camper.id}>
-          <td className="family-camper-name">
-            <strong>
-              {camper.camper_first_name}{" "}
-              {camper.camper_last_name}
-            </strong>
-          </td>
+                    {family.campers.map((camper) => (
+                      <tr key={camper.id}>
+                        <td className="family-camper-name">
+                          <strong>
+                            {camper.camper_first_name}{" "}
+                            {camper.camper_last_name}
+                          </strong>
+                        </td>
 
-          <td>
-            <input
-              type="checkbox"
-              checked={camper.isSLDCmember ?? false}
-              onChange={(event) =>
-                updateCamperStatus(camper.id, {
-                  isSLDCmember: event.target.checked,
-                })
-              }
-              aria-label={`SLDC membership for ${camper.camper_first_name}`}
-            />
-          </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={camper.isSLDCmember ?? false}
+                            onChange={(event) =>
+                              updateCamperStatus(camper.id, {
+                                isSLDCmember: event.target.checked,
+                              })
+                            }
+                            aria-label={`SLDC membership for ${camper.camper_first_name}`}
+                          />
+                        </td>
 
-          <td>
-            <input
-              type="checkbox"
-              checked={camper.isSLDCfee ?? false}
-              onChange={(event) =>
-                updateCamperStatus(camper.id, {
-                  isSLDCfee: event.target.checked,
-                })
-              }
-              aria-label={`SLDC fee for ${camper.camper_first_name}`}
-            />
-          </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={camper.isSLDCfee ?? false}
+                            onChange={(event) =>
+                              updateCamperStatus(camper.id, {
+                                isSLDCfee: event.target.checked,
+                              })
+                            }
+                            aria-label={`SLDC fee for ${camper.camper_first_name}`}
+                          />
+                        </td>
 
-          <td>
-            <input
-              type="checkbox"
-              checked={camper.isCampAccept ?? false}
-              onChange={(event) =>
-                updateCamperStatus(camper.id, {
-                  isCampAccept: event.target.checked,
-                })
-              }
-              aria-label={`Camp acceptance for ${camper.camper_first_name}`}
-            />
-          </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={camper.isCampAccept ?? false}
+                            onChange={(event) =>
+                              updateCamperStatus(camper.id, {
+                                isCampAccept: event.target.checked,
+                              })
+                            }
+                            aria-label={`Camp acceptance for ${camper.camper_first_name}`}
+                          />
+                        </td>
 
-          <td>
-            <input
-              type="checkbox"
-              checked={camper.isCampFee ?? false}
-              onChange={(event) =>
-                updateCamperStatus(camper.id, {
-                  isCampFee: event.target.checked,
-                })
-              }
-              aria-label={`Camp fee for ${camper.camper_first_name}`}
-            />
-          </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={camper.isCampFee ?? false}
+                            onChange={(event) =>
+                              updateCamperStatus(camper.id, {
+                                isCampFee: event.target.checked,
+                              })
+                            }
+                            aria-label={`Camp fee for ${camper.camper_first_name}`}
+                          />
+                        </td>
 
-          <td>
-            <input
-              type="checkbox"
-              checked={camper.isCampWaiver ?? false}
-              onChange={(event) =>
-                updateCamperStatus(camper.id, {
-                  isCampWaiver: event.target.checked,
-                })
-              }
-              aria-label={`Camp waiver for ${camper.camper_first_name}`}
-            />
-          </td>
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={camper.isCampWaiver ?? false}
+                            onChange={(event) =>
+                              updateCamperStatus(camper.id, {
+                                isCampWaiver: event.target.checked,
+                              })
+                            }
+                            aria-label={`Camp waiver for ${camper.camper_first_name}`}
+                          />
+                        </td>
 
-          <td>{camper.camper_type ?? "Not selected"}</td>
+                        <td>{camper.camper_type ?? "Not selected"}</td>
 
-          <td>
-            {camper.attending_full_camp
-              ? "Full camp"
-              : "Partial camp"}
-          </td>
+                        <td>
+                          {camper.attending_full_camp
+                            ? "Full camp"
+                            : "Partial camp"}
+                        </td>
 
-          <td>
-            {camperHasSLDCApplication(camper.id)
-              ? "Submitted"
-              : "Not submitted"}
-          </td>
+                        <td>
+                          {camperHasSLDCApplication(camper.id)
+                            ? "Submitted"
+                            : "Not submitted"}
+                        </td>
 
-          <td>
-            {camper.special_dietary_needs || "None"}
-          </td>
+                        <td>
+                          {camper.special_dietary_needs || "None"}
+                        </td>
 
-          <td>
-            {camper.is_driver
-              ? `Driver — ${
-                  camper.empty_seats_to_camp ?? 0
-                } up, ${
-                  camper.empty_seats_from_camp ?? 0
-                } home`
-              : "Not driving"}
-          </td>
-        </tr>
-      ))}
-    </Fragment>
-  ))}
-</tbody>
+                        <td>
+                          {camper.is_driver
+                            ? `Driver — ${camper.empty_seats_to_camp ?? 0
+                            } up, ${camper.empty_seats_from_camp ?? 0
+                            } home`
+                            : "Not driving"}
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
+                ))}
+              </tbody>
             </table>
           </div>
         )}
