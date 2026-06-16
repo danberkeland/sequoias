@@ -1262,3 +1262,28 @@ textarea {
   color: #64748b;
   text-align: center;
 }
+
+.fee-line-adjustment {
+  background: #fffbeb;
+  border-color: #facc15;
+}
+
+.fee-line-donation {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.fee-line-donation strong {
+  color: #15803d;
+}
+
+.fee-original-total {
+  padding: 8px 4px 14px;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.fee-original-total span {
+  text-decoration: line-through;
+}

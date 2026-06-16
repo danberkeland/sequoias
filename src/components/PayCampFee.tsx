@@ -255,6 +255,20 @@ function PayCampFee({
     }
   }
 
+  const paymentContributionAmount =
+  financialAssistanceRequested
+    ? parseOptionalAmount(
+        familyContributionAmount
+      ) ?? 0
+    : 0;
+
+const paymentDonationAmount =
+  parseOptionalAmount(
+    additionalDonationAmount
+  ) ?? 0;
+
+  
+
   return (
     <section className="card">
       <div className="section-header">
@@ -282,7 +296,18 @@ function PayCampFee({
 
       {showPayCampFee && (
         <div className="pay-camp-fee-panel">
-          <PaymentSummary campers={campers} />
+          <PaymentSummary
+  campers={campers}
+  financialAssistanceRequested={
+    financialAssistanceRequested
+  }
+  familyContributionAmount={
+    paymentContributionAmount
+  }
+  additionalDonationAmount={
+    paymentDonationAmount
+  }
+/>
 
           {isLoadingPaymentInfo ? (
             <div className="payment-preference-loading">
