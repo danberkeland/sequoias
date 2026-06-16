@@ -25,6 +25,28 @@ const schema = a.schema({
   })
   .authorization((allow) => [allow.owner()]),
 
+  FamilyCampPayment: a
+  .model({
+    family_name: a.string(),
+
+    financial_assistance_requested: a.boolean(),
+
+    // Amount the family says it can contribute toward camp.
+    // This may remain blank.
+    family_contribution_amount: a.float(),
+
+    // Optional amount beyond the normal camp fee.
+    additional_donation_amount: a.float(),
+  })
+  .authorization((allow) => [
+    allow.owner(),
+    allow.group("ADMINS").to([
+      "read",
+      "update",
+      "delete",
+    ]),
+  ]),
+
   Camper: a
     .model({
       camper_first_name: a.string().required(),

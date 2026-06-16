@@ -16,7 +16,6 @@ import AddCamperCard from "./components/AddCamperCard";
 import JoinSLDC from "./components/JoinSLDC";
 import SignCampWaiver from "./components/SignCampWaiver";
 import PayCampFee from "./components/PayCampFee";
-import PaymentSummary from "./components/PaymentSummary";
 import CampInfo from "./components/CampInfo";
 
 
@@ -48,35 +47,35 @@ function App() {
   const [showJoinSLDC, setShowJoinSLDC] = useState(false);
   const [showSignCampWaiver, setShowSignCampWaiver] = useState(false);
   const [showPayCampFee, setShowPayCampFee] = useState(false);
-  
+
 
   const canBeDriver =
     camperType === "COACH" || camperType === "PARENT" || camperType === "NON_PARENT_ADULT_ALUMNI";
 
   useEffect(() => {
-  if (!familyName.trim() || campers.length === 0) {
-    return;
-  }
+    if (!familyName.trim() || campers.length === 0) {
+      return;
+    }
 
-  const campersMissingFamilyName = campers.filter(
-    (camper) => !camper.family_name
-  );
+    const campersMissingFamilyName = campers.filter(
+      (camper) => !camper.family_name
+    );
 
-  if (campersMissingFamilyName.length === 0) {
-    return;
-  }
+    if (campersMissingFamilyName.length === 0) {
+      return;
+    }
 
-  Promise.all(
-    campersMissingFamilyName.map((camper) =>
-      client.models.Camper.update({
-        id: camper.id,
-        family_name: familyName.trim(),
-      })
-    )
-  ).catch((error) => {
-    console.error("Could not backfill family name:", error);
-  });
-}, [campers, client, familyName]);
+    Promise.all(
+      campersMissingFamilyName.map((camper) =>
+        client.models.Camper.update({
+          id: camper.id,
+          family_name: familyName.trim(),
+        })
+      )
+    ).catch((error) => {
+      console.error("Could not backfill family name:", error);
+    });
+  }, [campers, client, familyName]);
 
   useEffect(() => {
     async function loadUserAttributes() {
@@ -263,19 +262,18 @@ function App() {
         setShowSignCampWaiver={setShowSignCampWaiver}
       />
       <PayCampFee
+        campers={campers}
+        familyName={familyName}
         showPayCampFee={showPayCampFee}
-        setShowPayCampFee={setShowPayCampFee} />
+        setShowPayCampFee={setShowPayCampFee}
+      />
       <CampInfo
         showCampInfo={showCampInfo}
         setShowCampInfo={setShowCampInfo}
       />
 
 
-      <section className="card">
 
-        
-        <PaymentSummary campers={campers} />
-      </section>
     </main>
   );
 }
