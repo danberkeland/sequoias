@@ -337,12 +337,39 @@ function editCamper(camper: Camper) {
       return;
     }
 
-    console.log(
-      editingCamperId
-        ? "Camper updated successfully:"
-        : "Camper created successfully:",
-      result.data
+   console.log(
+  editingCamperId
+    ? "Camper updated successfully:"
+    : "Camper created successfully:",
+  result.data
+);
+
+if (editingCamperId) {
+  const updatedCamperId = editingCamperId;
+
+  setCampers((currentCampers) =>
+    currentCampers.map((camper) =>
+      camper.id === updatedCamperId
+        ? ({
+            ...camper,
+            ...camperData,
+          } as Camper)
+        : camper
+    )
+  );
+} else if (result.data) {
+  setCampers((currentCampers) => {
+    const alreadyExists = currentCampers.some(
+      (camper) => camper.id === result.data?.id
     );
+
+    return alreadyExists
+      ? currentCampers
+      : [...currentCampers, result.data as Camper];
+  });
+}
+
+resetCamperForm();
 
     resetCamperForm();
   } catch (error) {
