@@ -1,16 +1,37 @@
 import type { FormEvent } from "react";
-import type { CamperType, Size } from "../types";
+import type {
+  Camper,
+  CamperType,
+  Size,
+} from "../types";
 import type { AttendanceSchedule } from "../constants/campSchedule";
+
 import AttendanceScheda from "./AttendanceScheda";
 import TransportationFields from "./TransportationFields";
 import RegisteredCampersTable from "./RegisteredCampersTable";
-import type { Camper } from "../types";
 
 type AddCamperCardProps = {
-  showAddCamper: boolean;
-  setShowAddCamper: (value: boolean | ((current: boolean) => boolean)) => void;
+  campers: Camper[];
 
-  createCamper: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  editCamper: (camper: Camper) => void;
+
+  deleteCamper: (
+    id: string
+  ) => Promise<void>;
+
+  editingCamperId: string | null;
+
+  resetCamperForm: () => void;
+
+  showAddCamper: boolean;
+
+  setShowAddCamper: (
+    value: boolean | ((current: boolean) => boolean)
+  ) => void;
+
+  saveCamper: (
+    event: FormEvent<HTMLFormElement>
+  ) => Promise<void>;
 
   camperFirstName: string;
   setCamperFirstName: (value: string) => void;
@@ -19,7 +40,10 @@ type AddCamperCardProps = {
   setCamperLastName: (value: string) => void;
 
   camperType: CamperType;
-  handleCamperTypeChange: (value: CamperType) => void;
+
+  handleCamperTypeChange: (
+    value: CamperType
+  ) => void;
 
   shirtSize: Size;
   setShirtSize: (value: Size) => void;
@@ -28,119 +52,205 @@ type AddCamperCardProps = {
   setSweatshirtSize: (value: Size) => void;
 
   specialDietaryNeeds: string;
-  setSpecialDietaryNeeds: (value: string) => void;
+
+  setSpecialDietaryNeeds: (
+    value: string
+  ) => void;
 
   canBeDriver: boolean;
+
   isDriver: boolean;
   setIsDriver: (value: boolean) => void;
+
   emptySeatsToCamp: number;
-  setEmptySeatsToCamp: (value: number) => void;
+
+  setEmptySeatsToCamp: (
+    value: number
+  ) => void;
+
   emptySeatsFromCamp: number;
-  setEmptySeatsFromCamp: (value: number) => void;
+
+  setEmptySeatsFromCamp: (
+    value: number
+  ) => void;
+
   emptySeatsDuringCamp: number;
-  setEmptySeatsDuringCamp: (value: number) => void;
+
+  setEmptySeatsDuringCamp: (
+    value: number
+  ) => void;
 
   attendingFullCamp: boolean;
-  handleFullCampChange: (value: boolean) => void;
+
+  handleFullCampChange: (
+    value: boolean
+  ) => void;
+
   attendanceSchedule: AttendanceSchedule;
-  toggleAttendanceMeal: (mealId: string) => void;
-  campers: Camper[];
-  deleteCamper: (id: string) => Promise<void>;
+
+  toggleAttendanceMeal: (
+    mealId: string
+  ) => void;
 };
 
 function AddCamperCard({
+  campers,
+  editCamper,
+  deleteCamper,
+  editingCamperId,
+  resetCamperForm,
+
   showAddCamper,
   setShowAddCamper,
-  createCamper,
+  saveCamper,
+
   camperFirstName,
   setCamperFirstName,
+
   camperLastName,
   setCamperLastName,
+
   camperType,
   handleCamperTypeChange,
+
   shirtSize,
   setShirtSize,
+
   sweatshirtSize,
   setSweatshirtSize,
+
   specialDietaryNeeds,
   setSpecialDietaryNeeds,
+
   canBeDriver,
   isDriver,
   setIsDriver,
+
   emptySeatsToCamp,
   setEmptySeatsToCamp,
+
   emptySeatsFromCamp,
   setEmptySeatsFromCamp,
+
   emptySeatsDuringCamp,
   setEmptySeatsDuringCamp,
+
   attendingFullCamp,
   handleFullCampChange,
+
   attendanceSchedule,
   toggleAttendanceMeal,
-    campers,
-  deleteCamper,
 }: AddCamperCardProps) {
+  function handleHeaderButton() {
+    if (showAddCamper) {
+      resetCamperForm();
+    } else {
+      setShowAddCamper(true);
+    }
+  }
+
   return (
-    <section className="card">
+    <section
+      id="camper-form-section"
+      className="card"
+    >
       <div className="section-header">
         <div>
           <h1>Step 1</h1>
-          <br></br>
-          <h2>Add Campers</h2>
+          <br />
+
+          <h2>
+            {editingCamperId
+              ? "Edit Camper"
+              : "Add Campers"}
+          </h2>
+
           <p>
-            {showAddCamper
-              ? "Enter one camper or family member at a time."
-              : "Add all athletes, parents, siblings, coaches, or alumni attending camp from your household."}
+            {editingCamperId
+              ? "Make changes to this camper's registration."
+              : showAddCamper
+                ? "Enter one camper or family member at a time."
+                : "Add all athletes, parents, siblings, coaches, or alumni attending camp from your household."}
           </p>
         </div>
 
         <button
           type="button"
           className="primary-button"
-          onClick={() => setShowAddCamper((current) => !current)}
+          onClick={handleHeaderButton}
         >
-          {showAddCamper ? "Close" : "+ Add Camper"}
+          {showAddCamper
+            ? editingCamperId
+              ? "Cancel Edit"
+              : "Close"
+            : "+ Add Camper"}
         </button>
       </div>
 
       {showAddCamper && (
-        <form onSubmit={createCamper} className="camper-form">
+        <form
+          onSubmit={saveCamper}
+          className="camper-form"
+        >
           <div className="form-grid">
             <label className="field">
               <span>First Name</span>
+
               <input
                 value={camperFirstName}
-                onChange={(event) => setCamperFirstName(event.target.value)}
+                onChange={(event) =>
+                  setCamperFirstName(
+                    event.target.value
+                  )
+                }
                 required
               />
             </label>
 
             <label className="field">
               <span>Last Name</span>
+
               <input
                 value={camperLastName}
-                onChange={(event) => setCamperLastName(event.target.value)}
+                onChange={(event) =>
+                  setCamperLastName(
+                    event.target.value
+                  )
+                }
                 required
               />
             </label>
 
             <label className="field">
               <span>Camper Type</span>
+
               <select
                 value={camperType}
                 onChange={(event) =>
-                  handleCamperTypeChange(event.target.value as CamperType)
+                  handleCamperTypeChange(
+                    event.target.value as CamperType
+                  )
                 }
               >
-                <option value="ATHLETE">Athlete — $525</option>
-                <option value="PARENT">Parent — Included with Athlete</option>
+                <option value="ATHLETE">
+                  Athlete — $525
+                </option>
+
+                <option value="PARENT">
+                  Parent — Included with Athlete
+                </option>
+
                 <option value="NON_PARENT_ADULT_ALUMNI">
                   2nd Athlete/Alumni/Other Adult — $100
                 </option>
+
                 <option value="SIBLING">
                   Sibling, Middle School or Younger — $50
                 </option>
-                <option value="COACH">Coach — Free</option>
+
+                <option value="COACH">
+                  Coach — Free
+                </option>
               </select>
             </label>
 
@@ -148,20 +258,40 @@ function AddCamperCard({
               <TransportationFields
                 isDriver={isDriver}
                 setIsDriver={setIsDriver}
-                emptySeatsToCamp={emptySeatsToCamp}
-                setEmptySeatsToCamp={setEmptySeatsToCamp}
-                emptySeatsFromCamp={emptySeatsFromCamp}
-                setEmptySeatsFromCamp={setEmptySeatsFromCamp}
-                emptySeatsDuringCamp={emptySeatsDuringCamp}
-                setEmptySeatsDuringCamp={setEmptySeatsDuringCamp}
+
+                emptySeatsToCamp={
+                  emptySeatsToCamp
+                }
+                setEmptySeatsToCamp={
+                  setEmptySeatsToCamp
+                }
+
+                emptySeatsFromCamp={
+                  emptySeatsFromCamp
+                }
+                setEmptySeatsFromCamp={
+                  setEmptySeatsFromCamp
+                }
+
+                emptySeatsDuringCamp={
+                  emptySeatsDuringCamp
+                }
+                setEmptySeatsDuringCamp={
+                  setEmptySeatsDuringCamp
+                }
               />
             )}
 
             <label className="field">
               <span>Shirt Size</span>
+
               <select
                 value={shirtSize}
-                onChange={(event) => setShirtSize(event.target.value as Size)}
+                onChange={(event) =>
+                  setShirtSize(
+                    event.target.value as Size
+                  )
+                }
               >
                 <option value="XS">XS</option>
                 <option value="S">S</option>
@@ -173,10 +303,13 @@ function AddCamperCard({
 
             <label className="field">
               <span>Sweatshirt Size</span>
+
               <select
                 value={sweatshirtSize}
                 onChange={(event) =>
-                  setSweatshirtSize(event.target.value as Size)
+                  setSweatshirtSize(
+                    event.target.value as Size
+                  )
                 }
               >
                 <option value="XS">XS</option>
@@ -188,11 +321,16 @@ function AddCamperCard({
             </label>
 
             <label className="field field-full">
-              <span>Special Dietary Needs</span>
+              <span>
+                Special Dietary Needs
+              </span>
+
               <textarea
                 value={specialDietaryNeeds}
                 onChange={(event) =>
-                  setSpecialDietaryNeeds(event.target.value)
+                  setSpecialDietaryNeeds(
+                    event.target.value
+                  )
                 }
                 placeholder="Leave blank if none"
               />
@@ -206,16 +344,25 @@ function AddCamperCard({
                   type="checkbox"
                   checked={attendingFullCamp}
                   onChange={(event) =>
-                    handleFullCampChange(event.target.checked)
+                    handleFullCampChange(
+                      event.target.checked
+                    )
                   }
                 />
-                <span>This camper will attend the full camp</span>
+
+                <span>
+                  This camper will attend the full camp
+                </span>
               </label>
 
               {!attendingFullCamp && (
                 <AttendanceScheda
-                  attendanceSchedule={attendanceSchedule}
-                  toggleAttendanceMeal={toggleAttendanceMeal}
+                  attendanceSchedule={
+                    attendanceSchedule
+                  }
+                  toggleAttendanceMeal={
+                    toggleAttendanceMeal
+                  }
                 />
               )}
             </div>
@@ -225,28 +372,33 @@ function AddCamperCard({
             <button
               type="button"
               className="secondary-action-button"
-              onClick={() => setShowAddCamper(false)}
+              onClick={resetCamperForm}
             >
-              Cancel
+              {editingCamperId
+                ? "Cancel Edit"
+                : "Cancel"}
             </button>
 
-            <button type="submit" className="primary-button">
-              Save Camper
+            <button
+              type="submit"
+              className="primary-button"
+            >
+              {editingCamperId
+                ? "Save Changes"
+                : "Save Camper"}
             </button>
           </div>
         </form>
-        
-        
-        
       )}
+
       <div className="embedded-table-section">
-      <RegisteredCampersTable
-        campers={campers}
-        deleteCamper={deleteCamper}
-      />
-    </div>
+        <RegisteredCampersTable
+          campers={campers}
+          editCamper={editCamper}
+          deleteCamper={deleteCamper}
+        />
+      </div>
     </section>
-    
   );
 }
 

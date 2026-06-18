@@ -1,4 +1,5 @@
 import type { Camper } from "../types";
+
 import {
   formatCamperType,
   getAttendanceSummary,
@@ -8,11 +9,17 @@ import {
 
 type RegisteredCampersTableProps = {
   campers: Camper[];
-  deleteCamper: (id: string) => Promise<void>;
+
+  editCamper: (camper: Camper) => void;
+
+  deleteCamper: (
+    id: string
+  ) => Promise<void>;
 };
 
 function RegisteredCampersTable({
   campers,
+  editCamper,
   deleteCamper,
 }: RegisteredCampersTableProps) {
   return (
@@ -20,6 +27,7 @@ function RegisteredCampersTable({
       <div className="section-header">
         <div>
           <h2>Registered Campers</h2>
+
           <p>
             {campers.length === 1
               ? "1 camper registered"
@@ -31,7 +39,10 @@ function RegisteredCampersTable({
       {campers.length === 0 ? (
         <div className="empty-state">
           <h3>No campers added yet</h3>
-          <p>Use the form above to add your first camper.</p>
+
+          <p>
+            Use the form above to add your first camper.
+          </p>
         </div>
       ) : (
         <div className="table-wrap">
@@ -46,7 +57,7 @@ function RegisteredCampersTable({
                 <th>Dietary Needs</th>
                 <th>Attendance</th>
                 <th>Transportation</th>
-                <th></th>
+                <th>Actions</th>
               </tr>
             </thead>
 
@@ -55,31 +66,69 @@ function RegisteredCampersTable({
                 <tr key={camper.id}>
                   <td>
                     <strong>
-                      {camper.camper_first_name} {camper.camper_last_name}
+                      {camper.camper_first_name}{" "}
+                      {camper.camper_last_name}
                     </strong>
                   </td>
 
-                  <td>{formatCamperType(camper.camper_type)}</td>
-                  <td>${getCamperFee(camper).toLocaleString()}</td>
-                  <td>{camper.shirt_size ?? "Not selected"}</td>
-                  <td>{camper.sweatshirt_size ?? "Not selected"}</td>
-
                   <td>
-                    {camper.special_dietary_needs
-                      ? camper.special_dietary_needs
-                      : "None"}
+                    {formatCamperType(
+                      camper.camper_type
+                    )}
                   </td>
 
-                  <td>{getAttendanceSummary(camper)}</td>
-                  <td>{getTransportationSummary(camper)}</td>
+                  <td>
+                    $
+                    {getCamperFee(
+                      camper
+                    ).toLocaleString()}
+                  </td>
+
+                  <td>
+                    {camper.shirt_size ??
+                      "Not selected"}
+                  </td>
+
+                  <td>
+                    {camper.sweatshirt_size ??
+                      "Not selected"}
+                  </td>
+
+                  <td>
+                    {camper.special_dietary_needs ||
+                      "None"}
+                  </td>
+
+                  <td>
+                    {getAttendanceSummary(camper)}
+                  </td>
+
+                  <td>
+                    {getTransportationSummary(camper)}
+                  </td>
 
                   <td className="table-action">
-                    <button
-                      className="delete-button"
-                      onClick={() => deleteCamper(camper.id)}
-                    >
-                      Delete
-                    </button>
+                    <div className="table-action-buttons">
+                      <button
+                        type="button"
+                        className="edit-button"
+                        onClick={() =>
+                          editCamper(camper)
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        className="delete-button"
+                        onClick={() =>
+                          deleteCamper(camper.id)
+                        }
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

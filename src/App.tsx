@@ -18,7 +18,35 @@ import SignCampWaiver from "./components/SignCampWaiver";
 import PayCampFee from "./components/PayCampFee";
 import CampInfo from "./components/CampInfo";
 
+function parseCamperAttendance(
+  value: Camper["attendance_schedule"]
+): AttendanceSchedule {
+  if (!value) {
+    return createFullAttendanceSchedule();
+  }
 
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value) as AttendanceSchedule;
+    } catch (error) {
+      console.error(
+        "Could not parse camper attendance:",
+        error
+      );
+
+      return createFullAttendanceSchedule();
+    }
+  }
+
+  if (
+    typeof value === "object" &&
+    !Array.isArray(value)
+  ) {
+    return value as AttendanceSchedule;
+  }
+
+  return createFullAttendanceSchedule();
+}
 
 function App() {
   const client = useMemo(() => generateClient<Schema>(), []);
@@ -34,6 +62,9 @@ function App() {
   const [sweatshirtSize, setSweatshirtSize] = useState<Size>("M");
   const [specialDietaryNeeds, setSpecialDietaryNeeds] = useState("");
   const [showAddCamper, setShowAddCamper] = useState(false);
+  const [editingCamperId, setEditingCamperId] =
+  useState<string | null>(null);
+
 
   const [attendingFullCamp, setAttendingFullCamp] = useState(true);
   const [attendanceSchedule, setAttendanceSchedule] =
@@ -47,6 +78,8 @@ function App() {
   const [showJoinSLDC, setShowJoinSLDC] = useState(false);
   const [showSignCampWaiver, setShowSignCampWaiver] = useState(false);
   const [showPayCampFee, setShowPayCampFee] = useState(false);
+ 
+
 
 
   const canBeDriver =
@@ -126,73 +159,207 @@ useEffect(() => {
   };
 }, [client, user?.userId]);
 
+function editCamper(camper: Camper) {
+  const savedCamperType =
+    (camper.camper_type ?? "ATHLETE") as CamperType;
+
+  const camperCanDrive =
+    savedCamperType === "COACH" ||
+    savedCamperType === "PARENT" ||
+    savedCamperType ===
+      "NON_PARENT_ADULT_ALUMNI";
+
+  setEditingCamperId(camper.id);
+
+  setCamperFirstName(
+    camper.camper_first_name ?? ""
+  );
+
+  setCamperLastName(
+    camper.camper_last_name ?? ""
+  );
+
+  setCamperType(savedCamperType);
+
+  setShirtSize(
+    (camper.shirt_size ?? "M") as Size
+  );
+
+  setSweatshirtSize(
+    (camper.sweatshirt_size ?? "M") as Size
+  );
+
+  setSpecialDietaryNeeds(
+    camper.special_dietary_needs ?? ""
+  );
+
+  const isFullCamp =
+    camper.attending_full_camp ?? true;
+
+  setAttendingFullCamp(isFullCamp);
+
+  setAttendanceSchedule(
+    isFullCamp
+      ? createFullAttendanceSchedule()
+      : parseCamperAttendance(
+          camper.attendance_schedule
+        )
+  );
+
+  setIsDriver(
+    camperCanDrive &&
+      (camper.is_driver ?? false)
+  );
+
+  setEmptySeatsToCamp(
+    camper.empty_seats_to_camp ?? 0
+  );
+
+  setEmptySeatsFromCamp(
+    camper.empty_seats_from_camp ?? 0
+  );
+
+  setEmptySeatsDuringCamp(
+    camper.empty_seats_during_camp ?? 0
+  );
+
+  setShowAddCamper(true);
+
+  requestAnimationFrame(() => {
+    document
+      .getElementById("camper-form-section")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  });
+}
+
   function resetCamperForm() {
-    setCamperFirstName("");
-    setCamperLastName("");
-    setCamperType("ATHLETE");
-    setShirtSize("M");
-    setSweatshirtSize("M");
-    setSpecialDietaryNeeds("");
-    setShowAddCamper(false);
+  setCamperFirstName("");
+  setCamperLastName("");
+  setCamperType("ATHLETE");
+  setShirtSize("M");
+  setSweatshirtSize("M");
+  setSpecialDietaryNeeds("");
 
-    setAttendingFullCamp(true);
-    setAttendanceSchedule(createFullAttendanceSchedule());
+  setAttendingFullCamp(true);
+  setAttendanceSchedule(
+    createFullAttendanceSchedule()
+  );
 
-    setIsDriver(false);
-    setEmptySeatsToCamp(0);
-    setEmptySeatsFromCamp(0);
-    setEmptySeatsDuringCamp(0);
+  setIsDriver(false);
+  setEmptySeatsToCamp(0);
+  setEmptySeatsFromCamp(0);
+  setEmptySeatsDuringCamp(0);
+
+  setEditingCamperId(null);
+  setShowAddCamper(false);
+}
+  async function saveCamper(
+  event: FormEvent<HTMLFormElement>
+) {
+  event.preventDefault();
+
+  if (
+    !camperFirstName.trim() ||
+    !camperLastName.trim()
+  ) {
+    alert(
+      "Please enter the camper's first and last name."
+    );
+    return;
   }
 
-  async function createCamper(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const camperData = {
+    camper_first_name: camperFirstName.trim(),
+    camper_last_name: camperLastName.trim(),
+    camper_type: camperType,
+    shirt_size: shirtSize,
+    sweatshirt_size: sweatshirtSize,
 
-    if (!camperFirstName.trim() || !camperLastName.trim()) {
-      alert("Please enter the camper's first and last name.");
+    // Null allows an existing value to be cleared.
+    special_dietary_needs:
+      specialDietaryNeeds.trim() || null,
+
+    attending_full_camp: attendingFullCamp,
+
+    attendance_schedule: JSON.stringify(
+      attendingFullCamp
+        ? createFullAttendanceSchedule()
+        : attendanceSchedule
+    ),
+
+    is_driver: canBeDriver ? isDriver : false,
+
+    empty_seats_to_camp:
+      canBeDriver && isDriver
+        ? emptySeatsToCamp
+        : 0,
+
+    empty_seats_from_camp:
+      canBeDriver && isDriver
+        ? emptySeatsFromCamp
+        : 0,
+
+    empty_seats_during_camp:
+      canBeDriver && isDriver
+        ? emptySeatsDuringCamp
+        : 0,
+  };
+
+  try {
+    const result = editingCamperId
+      ? await client.models.Camper.update({
+          id: editingCamperId,
+          ...camperData,
+        })
+      : await client.models.Camper.create({
+          ...camperData,
+          family_name:
+            familyName.trim() || undefined,
+        });
+
+    if (result.errors?.length) {
+      console.error(
+        editingCamperId
+          ? "Camper update errors:"
+          : "Camper create errors:",
+        result.errors
+      );
+
+      alert(
+        editingCamperId
+          ? "There was a problem updating this camper."
+          : "There was a problem saving this camper."
+      );
+
       return;
     }
 
-    const newCamper = {
-      camper_first_name: camperFirstName.trim(),
-      camper_last_name: camperLastName.trim(),
-      family_name: familyName.trim() || undefined,
-      camper_type: camperType,
-      shirt_size: shirtSize,
-      sweatshirt_size: sweatshirtSize,
-      special_dietary_needs: specialDietaryNeeds.trim() || undefined,
+    console.log(
+      editingCamperId
+        ? "Camper updated successfully:"
+        : "Camper created successfully:",
+      result.data
+    );
 
-      attending_full_camp: attendingFullCamp,
-      attendance_schedule: JSON.stringify(
-        attendingFullCamp ? createFullAttendanceSchedule() : attendanceSchedule
-      ),
+    resetCamperForm();
+  } catch (error) {
+    console.error(
+      editingCamperId
+        ? "Unexpected camper update error:"
+        : "Unexpected camper create error:",
+      error
+    );
 
-      is_driver: canBeDriver ? isDriver : false,
-      empty_seats_to_camp: canBeDriver && isDriver ? emptySeatsToCamp : 0,
-      empty_seats_from_camp: canBeDriver && isDriver ? emptySeatsFromCamp : 0,
-      empty_seats_during_camp: canBeDriver && isDriver ? emptySeatsDuringCamp : 0,
-    };
-
-    console.log("Trying to create camper:", newCamper);
-
-    try {
-      const { data, errors } = await client.models.Camper.create(newCamper);
-
-      if (errors) {
-        console.error("Camper create errors:", errors);
-        alert(
-          "There was a problem saving this camper. Check the console for details."
-        );
-        return;
-      }
-
-      console.log("Camper created successfully:", data);
-      resetCamperForm();
-    } catch (error) {
-      console.error("Unexpected error creating camper:", error);
-      alert("Unexpected error saving camper. Check the console for details.");
-    }
+    alert(
+      editingCamperId
+        ? "Unexpected error updating camper."
+        : "Unexpected error saving camper."
+    );
   }
-
+}
   async function deleteCamper(id: string) {
     try {
       const { errors } = await client.models.Camper.delete({ id });
@@ -225,7 +392,9 @@ useEffect(() => {
     setCamperType(newType);
 
     const newTypeCanDrive =
-      newType === "PARENT" || newType === "NON_PARENT_ADULT_ALUMNI";
+  newType === "COACH" ||
+  newType === "PARENT" ||
+  newType === "NON_PARENT_ADULT_ALUMNI";
 
     if (!newTypeCanDrive) {
       setIsDriver(false);
@@ -243,38 +412,76 @@ useEffect(() => {
         onSignOut={signOut}
       />
 
-      <AddCamperCard
-        campers={campers}
-        deleteCamper={deleteCamper}
-        showAddCamper={showAddCamper}
-        setShowAddCamper={setShowAddCamper}
-        createCamper={createCamper}
-        camperFirstName={camperFirstName}
-        setCamperFirstName={setCamperFirstName}
-        camperLastName={camperLastName}
-        setCamperLastName={setCamperLastName}
-        camperType={camperType}
-        handleCamperTypeChange={handleCamperTypeChange}
-        shirtSize={shirtSize}
-        setShirtSize={setShirtSize}
-        sweatshirtSize={sweatshirtSize}
-        setSweatshirtSize={setSweatshirtSize}
-        specialDietaryNeeds={specialDietaryNeeds}
-        setSpecialDietaryNeeds={setSpecialDietaryNeeds}
-        canBeDriver={canBeDriver}
-        isDriver={isDriver}
-        setIsDriver={setIsDriver}
-        emptySeatsToCamp={emptySeatsToCamp}
-        setEmptySeatsToCamp={setEmptySeatsToCamp}
-        emptySeatsFromCamp={emptySeatsFromCamp}
-        setEmptySeatsFromCamp={setEmptySeatsFromCamp}
-        emptySeatsDuringCamp={emptySeatsDuringCamp}
-        setEmptySeatsDuringCamp={setEmptySeatsDuringCamp}
-        attendingFullCamp={attendingFullCamp}
-        handleFullCampChange={handleFullCampChange}
-        attendanceSchedule={attendanceSchedule}
-        toggleAttendanceMeal={toggleAttendanceMeal}
-      />
+     <AddCamperCard
+  campers={campers}
+  editCamper={editCamper}
+  deleteCamper={deleteCamper}
+
+  editingCamperId={editingCamperId}
+  resetCamperForm={resetCamperForm}
+
+  showAddCamper={showAddCamper}
+  setShowAddCamper={setShowAddCamper}
+
+  saveCamper={saveCamper}
+
+  camperFirstName={camperFirstName}
+  setCamperFirstName={setCamperFirstName}
+
+  camperLastName={camperLastName}
+  setCamperLastName={setCamperLastName}
+
+  camperType={camperType}
+  handleCamperTypeChange={
+    handleCamperTypeChange
+  }
+
+  shirtSize={shirtSize}
+  setShirtSize={setShirtSize}
+
+  sweatshirtSize={sweatshirtSize}
+  setSweatshirtSize={setSweatshirtSize}
+
+  specialDietaryNeeds={
+    specialDietaryNeeds
+  }
+  setSpecialDietaryNeeds={
+    setSpecialDietaryNeeds
+  }
+
+  canBeDriver={canBeDriver}
+  isDriver={isDriver}
+  setIsDriver={setIsDriver}
+
+  emptySeatsToCamp={emptySeatsToCamp}
+  setEmptySeatsToCamp={
+    setEmptySeatsToCamp
+  }
+
+  emptySeatsFromCamp={
+    emptySeatsFromCamp
+  }
+  setEmptySeatsFromCamp={
+    setEmptySeatsFromCamp
+  }
+
+  emptySeatsDuringCamp={
+    emptySeatsDuringCamp
+  }
+  setEmptySeatsDuringCamp={
+    setEmptySeatsDuringCamp
+  }
+
+  attendingFullCamp={attendingFullCamp}
+  handleFullCampChange={
+    handleFullCampChange
+  }
+
+  attendanceSchedule={attendanceSchedule}
+  toggleAttendanceMeal={
+    toggleAttendanceMeal
+  }
+/>
       <JoinSLDC
         campers={campers}
         showJoinSLDC={showJoinSLDC}
