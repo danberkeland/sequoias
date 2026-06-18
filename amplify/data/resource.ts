@@ -47,6 +47,21 @@ const schema = a.schema({
     ]),
   ]),
 
+  AppSettings: a
+  .model({
+    is_final: a.boolean().default(false),
+  })
+  .authorization((allow) => [
+    allow.authenticated().to(["read"]),
+
+    allow.group("ADMINS").to([
+      "create",
+      "read",
+      "update",
+      "delete",
+    ]),
+  ]),
+
   Camper: a
     .model({
       camper_first_name: a.string().required(),

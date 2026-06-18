@@ -30,6 +30,9 @@ type FamilyGroup = {
   campers: Camper[];
 };
 
+const APP_SETTINGS_ID =
+  "camp-registration-settings";
+
 function parseAttendanceSchedule(
   value: Camper["attendance_schedule"]
 ): AttendanceSchedule | null {
@@ -67,6 +70,14 @@ function AdminPage() {
 
   const [campers, setCampers] = useState<Camper[]>([]);
   const [applications, setApplications] = useState<SLDCApplication[]>([]);
+  const [isFinalPhase, setIsFinalPhase] =
+    useState(false);
+
+  const [settingsLoaded, setSettingsLoaded] =
+    useState(false);
+
+  const [isSavingPhase, setIsSavingPhase] =
+    useState(false);
 
   const mealSummary = useMemo(() => {
     const totals: Record<string, number> = {};
@@ -116,48 +127,48 @@ function AdminPage() {
   }, [campers]);
 
   const transportationSummary = useMemo(() => {
-  const drivers = campers
-    .filter((camper) => camper.is_driver === true)
-    .sort((a, b) => {
-      const lastNameComparison = (
-        a.camper_last_name ?? ""
-      ).localeCompare(b.camper_last_name ?? "");
+    const drivers = campers
+      .filter((camper) => camper.is_driver === true)
+      .sort((a, b) => {
+        const lastNameComparison = (
+          a.camper_last_name ?? ""
+        ).localeCompare(b.camper_last_name ?? "");
 
-      if (lastNameComparison !== 0) {
-        return lastNameComparison;
+        if (lastNameComparison !== 0) {
+          return lastNameComparison;
+        }
+
+        return (a.camper_first_name ?? "").localeCompare(
+          b.camper_first_name ?? ""
+        );
+      });
+
+    const totals = drivers.reduce(
+      (currentTotals, driver) => ({
+        toCamp:
+          currentTotals.toCamp +
+          Math.max(0, driver.empty_seats_to_camp ?? 0),
+
+        fromCamp:
+          currentTotals.fromCamp +
+          Math.max(0, driver.empty_seats_from_camp ?? 0),
+
+        duringCamp:
+          currentTotals.duringCamp +
+          Math.max(0, driver.empty_seats_during_camp ?? 0),
+      }),
+      {
+        toCamp: 0,
+        fromCamp: 0,
+        duringCamp: 0,
       }
+    );
 
-      return (a.camper_first_name ?? "").localeCompare(
-        b.camper_first_name ?? ""
-      );
-    });
-
-  const totals = drivers.reduce(
-    (currentTotals, driver) => ({
-      toCamp:
-        currentTotals.toCamp +
-        Math.max(0, driver.empty_seats_to_camp ?? 0),
-
-      fromCamp:
-        currentTotals.fromCamp +
-        Math.max(0, driver.empty_seats_from_camp ?? 0),
-
-      duringCamp:
-        currentTotals.duringCamp +
-        Math.max(0, driver.empty_seats_during_camp ?? 0),
-    }),
-    {
-      toCamp: 0,
-      fromCamp: 0,
-      duringCamp: 0,
-    }
-  );
-
-  return {
-    drivers,
-    totals,
-  };
-}, [campers]);
+    return {
+      drivers,
+      totals,
+    };
+  }, [campers]);
 
   const familyGroups = useMemo<FamilyGroup[]>(() => {
     const groups = new Map<string, FamilyGroup>();
@@ -203,6 +214,136 @@ function AdminPage() {
       a.name.localeCompare(b.name)
     );
   }, [campers]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAppSettings() {
+      try {
+        const { data, errors } =
+          await client.models.AppSettings.get(
+            {
+              id: APP_SETTINGS_ID,
+            },
+            {
+              authMode: "userPool",
+            }
+          );
+
+        if (errors?.length) {
+          console.error(
+            "App settings query errors:",
+            errors
+          );
+        }
+
+        if (cancelled) {
+          return;
+        }
+
+        if (data) {
+          setIsFinalPhase(data.is_final ?? false);
+          setSettingsLoaded(true);
+          return;
+        }
+
+        /*
+         * The record does not exist yet.
+         * Create it in preliminary mode.
+         */
+        const createResult =
+          await client.models.AppSettings.create(
+            {
+              id: APP_SETTINGS_ID,
+              is_final: false,
+            },
+            {
+              authMode: "userPool",
+            }
+          );
+
+        if (createResult.errors?.length) {
+          console.error(
+            "App settings create errors:",
+            createResult.errors
+          );
+
+          return;
+        }
+
+        if (!cancelled) {
+          setIsFinalPhase(
+            createResult.data?.is_final ?? false
+          );
+
+          setSettingsLoaded(true);
+        }
+      } catch (error) {
+        console.error(
+          "Could not load app settings:",
+          error
+        );
+      }
+    }
+
+    loadAppSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [client]);
+
+  async function changeApplicationPhase(
+    nextIsFinal: boolean
+  ) {
+    const previousValue = isFinalPhase;
+
+    setIsFinalPhase(nextIsFinal);
+    setIsSavingPhase(true);
+
+    try {
+      const { data, errors } =
+        await client.models.AppSettings.update(
+          {
+            id: APP_SETTINGS_ID,
+            is_final: nextIsFinal,
+          },
+          {
+            authMode: "userPool",
+          }
+        );
+
+      if (errors?.length) {
+        console.error(
+          "Application phase update errors:",
+          errors
+        );
+
+        setIsFinalPhase(previousValue);
+
+        alert(
+          "There was a problem changing the application phase."
+        );
+
+        return;
+      }
+
+      setIsFinalPhase(data?.is_final ?? nextIsFinal);
+    } catch (error) {
+      console.error(
+        "Unexpected application phase update error:",
+        error
+      );
+
+      setIsFinalPhase(previousValue);
+
+      alert(
+        "Unexpected error changing the application phase."
+      );
+    } finally {
+      setIsSavingPhase(false);
+    }
+  }
 
   function isFamilyStatusChecked(
     familyCampers: Camper[],
@@ -397,7 +538,76 @@ function AdminPage() {
             <h2>Camp Overview</h2>
             <p>Current registration totals</p>
           </div>
-          
+
+          <section className="card">
+            <div className="section-header">
+              <div>
+                <h2>Application Stage</h2>
+
+                <p>
+                  Control which portions of the camp application
+                  families can access.
+                </p>
+              </div>
+            </div>
+
+            {!settingsLoaded ? (
+              <p>Loading application stage…</p>
+            ) : (
+              <div className="application-stage-panel">
+                <div>
+                  <strong>
+                    {isFinalPhase
+                      ? "Final Application"
+                      : "Preliminary Interest Form"}
+                  </strong>
+
+                  <p>
+                    {isFinalPhase
+                      ? "Families can access all registration, waiver, and payment steps."
+                      : "Families can access only Step 1 to indicate interest in camp."}
+                  </p>
+                </div>
+
+                <label className="phase-switch">
+                  <span
+                    className={
+                      !isFinalPhase
+                        ? "phase-label is-active"
+                        : "phase-label"
+                    }
+                  >
+                    Preliminary
+                  </span>
+
+                  <input
+                    type="checkbox"
+                    checked={isFinalPhase}
+                    disabled={isSavingPhase}
+                    onChange={(event) =>
+                      changeApplicationPhase(
+                        event.target.checked
+                      )
+                    }
+                    aria-label="Switch application between preliminary and final"
+                  />
+
+                  <span className="phase-switch-slider" />
+
+                  <span
+                    className={
+                      isFinalPhase
+                        ? "phase-label is-active"
+                        : "phase-label"
+                    }
+                  >
+                    Final
+                  </span>
+                </label>
+              </div>
+            )}
+          </section>
+
         </div>
         <div className="admin-summary-grid">
           <div className="admin-summary-box">
@@ -487,95 +697,95 @@ function AdminPage() {
             </>
           )}
         </section>
-       <section className="card">
-  <div className="section-header">
-    <div>
-      <h2>Camp Drivers</h2>
-      <p>
-        Available passenger spaces offered by each driver
-      </p>
-    </div>
-  </div>
+        <section className="card">
+          <div className="section-header">
+            <div>
+              <h2>Camp Drivers</h2>
+              <p>
+                Available passenger spaces offered by each driver
+              </p>
+            </div>
+          </div>
 
-  {transportationSummary.drivers.length === 0 ? (
-    <div className="empty-state">
-      <h3>No drivers registered</h3>
-      <p>
-        Drivers will appear here once transportation
-        information has been submitted.
-      </p>
-    </div>
-  ) : (
-    <div className="table-wrap">
-      <table className="driver-table">
-        <thead>
-          <tr>
-            <th>Driver</th>
-            <th>Going Up</th>
-            <th>Coming Down</th>
-            <th>At Camp</th>
-          </tr>
-        </thead>
+          {transportationSummary.drivers.length === 0 ? (
+            <div className="empty-state">
+              <h3>No drivers registered</h3>
+              <p>
+                Drivers will appear here once transportation
+                information has been submitted.
+              </p>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="driver-table">
+                <thead>
+                  <tr>
+                    <th>Driver</th>
+                    <th>Going Up</th>
+                    <th>Coming Down</th>
+                    <th>At Camp</th>
+                  </tr>
+                </thead>
 
-        <tbody>
-          {transportationSummary.drivers.map((driver) => (
-            <tr key={driver.id}>
-              <td>
-                <strong>
-                  {driver.camper_first_name}{" "}
-                  {driver.camper_last_name}
-                </strong>
+                <tbody>
+                  {transportationSummary.drivers.map((driver) => (
+                    <tr key={driver.id}>
+                      <td>
+                        <strong>
+                          {driver.camper_first_name}{" "}
+                          {driver.camper_last_name}
+                        </strong>
 
-                {driver.family_name && (
-                  <span className="driver-family-name">
-                    {driver.family_name} Family
-                  </span>
-                )}
-              </td>
+                        {driver.family_name && (
+                          <span className="driver-family-name">
+                            {driver.family_name} Family
+                          </span>
+                        )}
+                      </td>
 
-              <td>
-                {driver.empty_seats_to_camp ?? 0}
-              </td>
+                      <td>
+                        {driver.empty_seats_to_camp ?? 0}
+                      </td>
 
-              <td>
-                {driver.empty_seats_from_camp ?? 0}
-              </td>
+                      <td>
+                        {driver.empty_seats_from_camp ?? 0}
+                      </td>
 
-              <td>
-                {driver.empty_seats_during_camp ?? 0}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+                      <td>
+                        {driver.empty_seats_during_camp ?? 0}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
 
-        <tfoot>
-          <tr>
-            <th>Total Open Seats</th>
+                <tfoot>
+                  <tr>
+                    <th>Total Open Seats</th>
 
-            <td>
-              <strong>
-                {transportationSummary.totals.toCamp}
-              </strong>
-            </td>
+                    <td>
+                      <strong>
+                        {transportationSummary.totals.toCamp}
+                      </strong>
+                    </td>
 
-            <td>
-              <strong>
-                {transportationSummary.totals.fromCamp}
-              </strong>
-            </td>
+                    <td>
+                      <strong>
+                        {transportationSummary.totals.fromCamp}
+                      </strong>
+                    </td>
 
-            <td>
-              <strong>
-                {transportationSummary.totals.duringCamp}
-              </strong>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  )}
-</section>
-        
+                    <td>
+                      <strong>
+                        {transportationSummary.totals.duringCamp}
+                      </strong>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </section>
+
       </section>
 
       <section className="card">

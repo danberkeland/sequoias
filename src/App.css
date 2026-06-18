@@ -1361,3 +1361,124 @@ textarea {
 .delete-button:hover {
   background: #fee2e2;
 }
+
+.application-stage-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ec;
+  border-radius: 16px;
+}
+
+.application-stage-panel p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.phase-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.phase-switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.phase-switch-slider {
+  position: relative;
+  width: 54px;
+  height: 30px;
+  background: #f59e0b;
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+
+.phase-switch-slider::after {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  content: "";
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(15, 23, 42, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.phase-switch input:checked +
+.phase-switch-slider {
+  background: #16a34a;
+}
+
+.phase-switch input:checked +
+.phase-switch-slider::after {
+  transform: translateX(24px);
+}
+
+.phase-switch input:disabled +
+.phase-switch-slider {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.phase-label {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.phase-label.is-active {
+  color: #0f172a;
+}
+
+.preliminary-interest-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: #fffbeb;
+  border-color: #facc15;
+}
+
+.preliminary-interest-card h2 {
+  margin: 2px 0 10px;
+  color: #854d0e;
+}
+
+.preliminary-interest-card p {
+  max-width: 850px;
+  color: #713f12;
+  line-height: 1.6;
+}
+
+.preliminary-interest-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  color: white;
+  background: #eab308;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.preliminary-interest-note {
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .application-stage-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
