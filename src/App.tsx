@@ -90,18 +90,41 @@ function App() {
     loadUserAttributes();
   }, []);
 
-  useEffect(() => {
-    const sub = client.models.Camper.observeQuery().subscribe({
+useEffect(() => {
+  const currentUserSub = user?.userId;
+
+  if (!currentUserSub) {
+    setCampers([]);
+    return;
+  }
+
+  const subscription =
+    client.models.Camper.observeQuery({
+      filter: {
+        owner: {
+          beginsWith: `${currentUserSub}::`,
+        },
+      },
+      authMode: "userPool",
+    }).subscribe({
       next: ({ items }) => {
         setCampers([...items]);
       },
+
       error: (error) => {
-        console.error("Observe campers error:", error);
+        console.error(
+          "Family camper query error:",
+          error
+        );
+
+        setCampers([]);
       },
     });
 
-    return () => sub.unsubscribe();
-  }, [client]);
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [client, user?.userId]);
 
   function resetCamperForm() {
     setCamperFirstName("");
