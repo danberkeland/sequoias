@@ -46,9 +46,17 @@ function TransportationFields({
       </label>
 
       {isDriver && (
-        <div className="driving-grid">
+        <>
+          <p className="field-help transportation-help">
+            Please enter the total number of seats in the
+            vehicle, including the driver.
+          </p>
+
           <label className="field">
-            <span>Empty seats going up to camp</span>
+            <span>
+              Total seats going to camp, including driver
+            </span>
+
             <input
               type="number"
               min="0"
@@ -61,7 +69,7 @@ function TransportationFields({
           </label>
 
           <label className="field">
-            <span>Empty seats coming home</span>
+            <span>Total coming home from camp, including driver</span>
             <input
               type="number"
               min="0"
@@ -74,7 +82,7 @@ function TransportationFields({
           </label>
 
           <label className="field">
-            <span>Empty seats while at camp</span>
+            <span>Total while at camp, including driver</span>
             <input
               type="number"
               min="0"
@@ -85,7 +93,7 @@ function TransportationFields({
               }
             />
           </label>
-        </div>
+        </>
       )}
     </div>
   );
