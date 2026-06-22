@@ -160,6 +160,49 @@ function formatCampBirthday(
   );
 }
 
+function driverIsAvailableAtCamp(
+  driver: Camper
+): boolean {
+  // A full-camp driver is present for all camp meals by definition.
+  if (driver.attending_full_camp === true) {
+    return true;
+  }
+
+  const schedule = parseAttendanceSchedule(
+    driver.attendance_schedule
+  );
+
+  if (!schedule) {
+    return false;
+  }
+
+  /*
+   * Require the driver to attend both breakfast and lunch
+   * on every day that includes both meals.
+   *
+   * This excludes arrival day and departure day, since those
+   * do not have both breakfast and lunch.
+   */
+  const fullDayMealPairs = CAMP_DAYS.filter((day) => {
+    const breakfast = day.meals[0];
+    const lunch = day.meals[1];
+
+    return Boolean(breakfast && lunch);
+  });
+
+  return fullDayMealPairs.every((day) => {
+    const breakfast = day.meals[0];
+    const lunch = day.meals[1];
+
+    return (
+      breakfast &&
+      lunch &&
+      schedule[breakfast.id] === true &&
+      schedule[lunch.id] === true
+    );
+  });
+}
+
 
 function AdminPage() {
   const client = useMemo(() => generateClient<Schema>(), []);
@@ -570,8 +613,13 @@ function AdminPage() {
           Math.max(0, driver.empty_seats_from_camp ?? 0),
 
         duringCamp:
-          currentTotals.duringCamp +
-          Math.max(0, driver.empty_seats_during_camp ?? 0),
+  currentTotals.duringCamp +
+  (driverIsAvailableAtCamp(driver)
+    ? Math.max(
+        0,
+        driver.empty_seats_during_camp ?? 0
+      )
+    : 0),
       }),
       {
         toCamp: 0,
@@ -1293,9 +1341,11 @@ function AdminPage() {
                         {driver.empty_seats_from_camp ?? 0}
                       </td>
 
-                      <td>
-                        {driver.empty_seats_during_camp ?? 0}
-                      </td>
+                     <td>
+  {driverIsAvailableAtCamp(driver)
+    ? driver.empty_seats_during_camp ?? 0
+    : "Not present for full days"}
+</td>
                     </tr>
                   ))}
                 </tbody>
