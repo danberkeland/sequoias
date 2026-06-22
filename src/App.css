@@ -1583,3 +1583,61 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.camp-birthdays-card {
+  margin-top: 20px;
+}
+
+.birthday-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  color: #854d0e;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.camp-birthday-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.camp-birthday-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+}
+
+.birthday-family-name {
+  display: block;
+  margin-top: 3px;
+  color: #78716c;
+  font-size: 0.82rem;
+}
+
+.birthday-date {
+  color: #92400e;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .camp-birthday-item {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
