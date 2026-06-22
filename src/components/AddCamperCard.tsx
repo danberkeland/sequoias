@@ -9,6 +9,11 @@ import type { AttendanceSchedule } from "../constants/campSchedule";
 import AttendanceScheda from "./AttendanceScheda";
 import TransportationFields from "./TransportationFields";
 import RegisteredCampersTable from "./RegisteredCampersTable";
+import {
+  DIETARY_OPTIONS,
+  type DietaryOptionKey,
+  type DietarySelections,
+} from "../utils/dietaryNeeds";
 
 type AddCamperCardProps = {
   campers: Camper[];
@@ -51,11 +56,17 @@ type AddCamperCardProps = {
   sweatshirtSize: Size;
   setSweatshirtSize: (value: Size) => void;
 
-  specialDietaryNeeds: string;
+  dietarySelections: DietarySelections;
 
-  setSpecialDietaryNeeds: (
-    value: string
-  ) => void;
+toggleDietaryOption: (
+  option: DietaryOptionKey
+) => void;
+
+otherDietaryNeeds: string;
+
+setOtherDietaryNeeds: (
+  value: string
+) => void;
 
   canBeDriver: boolean;
 
@@ -119,8 +130,10 @@ function AddCamperCard({
   sweatshirtSize,
   setSweatshirtSize,
 
-  specialDietaryNeeds,
-  setSpecialDietaryNeeds,
+  dietarySelections,
+toggleDietaryOption,
+otherDietaryNeeds,
+setOtherDietaryNeeds,
 
   canBeDriver,
   isDriver,
@@ -320,21 +333,49 @@ function AddCamperCard({
               </select>
             </label>
 
-            <label className="field field-full">
-              <span>
-                Special Dietary Needs
-              </span>
+            
+<div className="field field-full dietary-needs-field">
+  <span>Dietary Needs and Allergies</span>
 
-              <textarea
-                value={specialDietaryNeeds}
-                onChange={(event) =>
-                  setSpecialDietaryNeeds(
-                    event.target.value
-                  )
-                }
-                placeholder="Leave blank if none"
-              />
-            </label>
+ <p className="field-help">
+  We will make every effort to accommodate dietary needs and allergies.
+  Please provide this information now so our camp kitchen team can plan
+  safely and prepare appropriately.
+</p>
+
+  <div className="dietary-option-grid">
+    {DIETARY_OPTIONS.map((option) => (
+      <label
+        key={option.key}
+        className="dietary-option"
+      >
+        <input
+          type="checkbox"
+          checked={dietarySelections[option.key]}
+          onChange={() =>
+            toggleDietaryOption(option.key)
+          }
+        />
+
+        <span>{option.label}</span>
+      </label>
+    ))}
+  </div>
+
+  <label className="dietary-other-field">
+    <span>Other dietary need or allergy</span>
+
+    <input
+      value={otherDietaryNeeds}
+      onChange={(event) =>
+        setOtherDietaryNeeds(event.target.value)
+      }
+      placeholder="Optional — for example, no eggs, vegan, severe shellfish allergy"
+    />
+  </label>
+</div>
+
+
 
             <div className="field field-full">
               <span>Camp Attendance</span>
