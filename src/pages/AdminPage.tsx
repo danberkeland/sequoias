@@ -160,11 +160,49 @@ function formatCampBirthday(
   );
 }
 
-function driverIsAvailableAtCamp(
-  driver: Camper
+/**
+ * These are the camp days that have both breakfast and lunch.
+ *
+ * A driver is counted for daytime driving only if they are
+ * attending both meals on that specific day.
+ */
+const AT_CAMP_DRIVING_DAYS = CAMP_DAYS.flatMap((day) => {
+  const breakfast = day.meals[0];
+  const lunch = day.meals[1];
+
+  if (!breakfast || !lunch) {
+    return [];
+  }
+
+  return [
+    {
+      date: day.date,
+      breakfastId: breakfast.id,
+      lunchId: lunch.id,
+    },
+  ];
+});
+
+type AtCampDrivingDay =
+  (typeof AT_CAMP_DRIVING_DAYS)[number];
+
+/**
+ * Returns true only when this driver is present for both
+ * breakfast and lunch on the specified camp day.
+ */
+function driverIsAvailableAtCampOnDay(
+  driver: Camper,
+  day: AtCampDrivingDay
 ): boolean {
-  // A full-camp driver is present for all camp meals by definition.
-  if (driver.attending_full_camp === true) {
+  if (driver.is_driver !== true) {
+    return false;
+  }
+
+  /*
+   * Treat an omitted attendance setting as full camp.
+   * Full-camp drivers are present for every meal.
+   */
+  if (driver.attending_full_camp !== false) {
     return true;
   }
 
@@ -172,35 +210,10 @@ function driverIsAvailableAtCamp(
     driver.attendance_schedule
   );
 
-  if (!schedule) {
-    return false;
-  }
-
-  /*
-   * Require the driver to attend both breakfast and lunch
-   * on every day that includes both meals.
-   *
-   * This excludes arrival day and departure day, since those
-   * do not have both breakfast and lunch.
-   */
-  const fullDayMealPairs = CAMP_DAYS.filter((day) => {
-    const breakfast = day.meals[0];
-    const lunch = day.meals[1];
-
-    return Boolean(breakfast && lunch);
-  });
-
-  return fullDayMealPairs.every((day) => {
-    const breakfast = day.meals[0];
-    const lunch = day.meals[1];
-
-    return (
-      breakfast &&
-      lunch &&
-      schedule[breakfast.id] === true &&
-      schedule[lunch.id] === true
-    );
-  });
+  return (
+    schedule?.[day.breakfastId] === true &&
+    schedule?.[day.lunchId] === true
+  );
 }
 
 
@@ -230,7 +243,7 @@ function AdminPage() {
 
     let incompleteAttendanceRecords = 0;
 
-    
+
 
     campers.forEach((camper) => {
       // Full-camp campers attend every scheduled meal.
@@ -267,31 +280,31 @@ function AdminPage() {
   }, [campers]);
 
   function printSLDCWaiver(
-      camper: Camper,
-      application: SLDCApplication
-    ) {
-      const printWindow = window.open(
-        "",
-        "_blank",
-        "width=900,height=1000"
+    camper: Camper,
+    application: SLDCApplication
+  ) {
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=900,height=1000"
+    );
+
+    if (!printWindow) {
+      alert(
+        "The print window was blocked. Please allow pop-ups for this website and try again."
       );
+      return;
+    }
 
-      if (!printWindow) {
-        alert(
-          "The print window was blocked. Please allow pop-ups for this website and try again."
-        );
-        return;
-      }
+    const camperName =
+      `${camper.camper_first_name ?? ""} ${camper.camper_last_name ?? ""
+        }`.trim();
 
-      const camperName =
-        `${camper.camper_first_name ?? ""} ${camper.camper_last_name ?? ""
-          }`.trim();
+    const signedDate = application.signed_at
+      ? new Date(application.signed_at).toLocaleString()
+      : "Not recorded";
 
-      const signedDate = application.signed_at
-        ? new Date(application.signed_at).toLocaleString()
-        : "Not recorded";
-
-      printWindow.document.write(`
+    printWindow.document.write(`
     <!doctype html>
     <html lang="en">
       <head>
@@ -496,14 +509,14 @@ function AdminPage() {
             </span>
 
             ${escapeHtml(
-        [
-          application.races_or_info_1,
-          application.races_or_info_2,
-          application.races_or_info_3,
-        ]
-          .filter(Boolean)
-          .join(" — ") || "None provided"
-      )}
+      [
+        application.races_or_info_1,
+        application.races_or_info_2,
+        application.races_or_info_3,
+      ]
+        .filter(Boolean)
+        .join(" — ") || "None provided"
+    )}
           </div>
         </div>
 
@@ -514,9 +527,9 @@ function AdminPage() {
 
           <p class="accepted">
             ${application.waiver_accepted
-          ? "✓ Waiver accepted"
-          : "Waiver acceptance not recorded"
-        }
+        ? "✓ Waiver accepted"
+        : "Waiver acceptance not recorded"
+      }
           </p>
         </div>
 
@@ -529,9 +542,9 @@ function AdminPage() {
 
           <p class="accepted">
             ${application.code_of_conduct_accepted
-          ? "✓ Code of Conduct accepted"
-          : "Code of Conduct acceptance not recorded"
-        }
+        ? "✓ Code of Conduct accepted"
+        : "Code of Conduct acceptance not recorded"
+      }
           </p>
         </div>
 
@@ -544,8 +557,8 @@ function AdminPage() {
             </span>
 
             ${escapeHtml(
-          application.signature_name || "Not provided"
-        )}
+        application.signature_name || "Not provided"
+      )}
           </div>
 
           <div class="signature-box">
@@ -554,9 +567,9 @@ function AdminPage() {
             </span>
 
             ${escapeHtml(
-          application.parent_signature_name ||
-          "Not provided"
-        )}
+        application.parent_signature_name ||
+        "Not provided"
+      )}
           </div>
         </div>
 
@@ -568,9 +581,9 @@ function AdminPage() {
         <div class="footer">
           Application version:
           ${escapeHtml(
-          application.application_version ||
-          "Not recorded"
-        )}
+        application.application_version ||
+        "Not recorded"
+      )}
 
           <br />
 
@@ -581,122 +594,143 @@ function AdminPage() {
     </html>
   `);
 
-      printWindow.document.close();
-      printWindow.focus();
-    }
+    printWindow.document.close();
+    printWindow.focus();
+  }
 
-  const transportationSummary = useMemo(() => {
-    const drivers = campers
-      .filter((camper) => camper.is_driver === true)
-      .sort((a, b) => {
-        const lastNameComparison = (
-          a.camper_last_name ?? ""
-        ).localeCompare(b.camper_last_name ?? "");
+ const drivers = useMemo(() => {
+  return campers
+    .filter((camper) => camper.is_driver === true)
+    .sort((a, b) => {
+      const lastNameComparison = (
+        a.camper_last_name ?? ""
+      ).localeCompare(b.camper_last_name ?? "");
 
-        if (lastNameComparison !== 0) {
-          return lastNameComparison;
-        }
-
-        return (a.camper_first_name ?? "").localeCompare(
-          b.camper_first_name ?? ""
-        );
-      });
-
-    const totals = drivers.reduce(
-      (currentTotals, driver) => ({
-        toCamp:
-          currentTotals.toCamp +
-          Math.max(0, driver.empty_seats_to_camp ?? 0),
-
-        fromCamp:
-          currentTotals.fromCamp +
-          Math.max(0, driver.empty_seats_from_camp ?? 0),
-
-        duringCamp:
-  currentTotals.duringCamp +
-  (driverIsAvailableAtCamp(driver)
-    ? Math.max(
-        0,
-        driver.empty_seats_during_camp ?? 0
-      )
-    : 0),
-      }),
-      {
-        toCamp: 0,
-        fromCamp: 0,
-        duringCamp: 0,
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
       }
-    );
 
-    return {
-      drivers,
-      totals,
-    };
-  }, [campers]);
+      return (a.camper_first_name ?? "").localeCompare(
+        b.camper_first_name ?? ""
+      );
+    });
+}, [campers]);
 
-  const campBirthdays = useMemo<CampBirthday[]>(() => {
-  const campersById = new Map(
-    campers.map((camper) => [camper.id, camper])
+const transportationSummary = useMemo(() => {
+  const toCampTotal = drivers.reduce(
+    (total, driver) =>
+      total +
+      Math.max(
+        0,
+        driver.empty_seats_to_camp ?? 0
+      ),
+    0
   );
 
-  const birthdays: CampBirthday[] = [];
-
-  applications.forEach((application) => {
-    const camper = campersById.get(
-      application.camper_id
-    );
-
-    const birthday = parseBirthdayMonthDay(
-      application.birthdate
-    );
-
-    if (
-      !camper ||
-      !birthday ||
-      !birthdayFallsDuringCamp(
-        birthday.month,
-        birthday.day
-      )
-    ) {
-      return;
-    }
-
-    birthdays.push({
-      camper,
-      month: birthday.month,
-      day: birthday.day,
-      displayDate: formatCampBirthday(
-        birthday.month,
-        birthday.day
+  const fromCampTotal = drivers.reduce(
+    (total, driver) =>
+      total +
+      Math.max(
+        0,
+        driver.empty_seats_from_camp ?? 0
       ),
+    0
+  );
+
+  const atCampDays = AT_CAMP_DRIVING_DAYS.map(
+    (day) => {
+      const availableDrivers = drivers.filter((driver) =>
+        driverIsAvailableAtCampOnDay(driver, day)
+      );
+
+      const totalSeats = availableDrivers.reduce(
+        (total, driver) =>
+          total +
+          Math.max(
+            0,
+            driver.empty_seats_during_camp ?? 0
+          ),
+        0
+      );
+
+      return {
+        ...day,
+        availableDrivers,
+        totalSeats,
+      };
+    }
+  );
+
+  return {
+    toCampTotal,
+    fromCampTotal,
+    atCampDays,
+  };
+}, [drivers]);
+
+  const campBirthdays = useMemo<CampBirthday[]>(() => {
+    const campersById = new Map(
+      campers.map((camper) => [camper.id, camper])
+    );
+
+    const birthdays: CampBirthday[] = [];
+
+    applications.forEach((application) => {
+      const camper = campersById.get(
+        application.camper_id
+      );
+
+      const birthday = parseBirthdayMonthDay(
+        application.birthdate
+      );
+
+      if (
+        !camper ||
+        !birthday ||
+        !birthdayFallsDuringCamp(
+          birthday.month,
+          birthday.day
+        )
+      ) {
+        return;
+      }
+
+      birthdays.push({
+        camper,
+        month: birthday.month,
+        day: birthday.day,
+        displayDate: formatCampBirthday(
+          birthday.month,
+          birthday.day
+        ),
+      });
     });
-  });
 
-  return birthdays.sort((a, b) => {
-    const dateComparison =
-      a.month - b.month || a.day - b.day;
+    return birthdays.sort((a, b) => {
+      const dateComparison =
+        a.month - b.month || a.day - b.day;
 
-    if (dateComparison !== 0) {
-      return dateComparison;
-    }
+      if (dateComparison !== 0) {
+        return dateComparison;
+      }
 
-    const lastNameComparison = (
-      a.camper.camper_last_name ?? ""
-    ).localeCompare(
-      b.camper.camper_last_name ?? ""
-    );
+      const lastNameComparison = (
+        a.camper.camper_last_name ?? ""
+      ).localeCompare(
+        b.camper.camper_last_name ?? ""
+      );
 
-    if (lastNameComparison !== 0) {
-      return lastNameComparison;
-    }
+      if (lastNameComparison !== 0) {
+        return lastNameComparison;
+      }
 
-    return (
-      a.camper.camper_first_name ?? ""
-    ).localeCompare(
-      b.camper.camper_first_name ?? ""
-    );
-  });
-}, [applications, campers]);
+      return (
+        a.camper.camper_first_name ?? ""
+      ).localeCompare(
+        b.camper.camper_first_name ?? ""
+      );
+    });
+  }, [applications, campers]);
 
   const familyGroups = useMemo<FamilyGroup[]>(() => {
     const groups = new Map<string, FamilyGroup>();
@@ -1150,7 +1184,7 @@ function AdminPage() {
             <span>Registered Campers</span>
             <strong>{campers.length}</strong>
           </div>
-         
+
 
           <div className="admin-summary-box">
             <span>SLDC Applications</span>
@@ -1168,59 +1202,59 @@ function AdminPage() {
             </strong>
           </div>
         </div>
-         <section className="card camp-birthdays-card">
-  <div className="section-header">
-    <div>
-      <h2>Camp Birthdays</h2>
+        <section className="card camp-birthdays-card">
+          <div className="section-header">
+            <div>
+              <h2>Camp Birthdays</h2>
 
-      <p>
-        Registered campers with birthdays between July 26
-        and August 2
-      </p>
-    </div>
+              <p>
+                Registered campers with birthdays between July 26
+                and August 2
+              </p>
+            </div>
 
-    <span className="birthday-count">
-      {campBirthdays.length}
-    </span>
-  </div>
-
-  {campBirthdays.length === 0 ? (
-    <div className="empty-state">
-      <h3>No camp birthdays listed</h3>
-
-      <p>
-        No registered campers currently have birthdays
-        during the camp dates.
-      </p>
-    </div>
-  ) : (
-    <ul className="camp-birthday-list">
-      {campBirthdays.map((birthday) => (
-        <li
-          key={birthday.camper.id}
-          className="camp-birthday-item"
-        >
-          <div>
-            <strong>
-              {birthday.camper.camper_first_name}{" "}
-              {birthday.camper.camper_last_name}
-            </strong>
-
-            {birthday.camper.family_name && (
-              <span className="birthday-family-name">
-                {birthday.camper.family_name} Family
-              </span>
-            )}
+            <span className="birthday-count">
+              {campBirthdays.length}
+            </span>
           </div>
 
-          <span className="birthday-date">
-            {birthday.displayDate}
-          </span>
-        </li>
-      ))}
-    </ul>
-  )}
-</section>
+          {campBirthdays.length === 0 ? (
+            <div className="empty-state">
+              <h3>No camp birthdays listed</h3>
+
+              <p>
+                No registered campers currently have birthdays
+                during the camp dates.
+              </p>
+            </div>
+          ) : (
+            <ul className="camp-birthday-list">
+              {campBirthdays.map((birthday) => (
+                <li
+                  key={birthday.camper.id}
+                  className="camp-birthday-item"
+                >
+                  <div>
+                    <strong>
+                      {birthday.camper.camper_first_name}{" "}
+                      {birthday.camper.camper_last_name}
+                    </strong>
+
+                    {birthday.camper.family_name && (
+                      <span className="birthday-family-name">
+                        {birthday.camper.family_name} Family
+                      </span>
+                    )}
+                  </div>
+
+                  <span className="birthday-date">
+                    {birthday.displayDate}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
         <section className="card">
           <div className="section-header">
             <div>
@@ -1288,95 +1322,190 @@ function AdminPage() {
           )}
         </section>
         <section className="card">
-          <div className="section-header">
-            <div>
-              <h2>Camp Drivers</h2>
-              <p>
-                Available passenger spaces offered by each driver
-              </p>
-            </div>
-          </div>
+  <div className="section-header">
+    <div>
+      <h2>Driving To and From Camp</h2>
 
-          {transportationSummary.drivers.length === 0 ? (
-            <div className="empty-state">
-              <h3>No drivers registered</h3>
-              <p>
-                Drivers will appear here once transportation
-                information has been submitted.
-              </p>
-            </div>
-          ) : (
-            <div className="table-wrap">
-              <table className="driver-table">
-                <thead>
-                  <tr>
-                    <th>Driver</th>
-                    <th>Going Up</th>
-                    <th>Coming Down</th>
-                    <th>At Camp</th>
-                  </tr>
-                </thead>
+      <p>
+        Open passenger seats offered for travel to camp
+        and the trip home.
+      </p>
+    </div>
+  </div>
 
-                <tbody>
-                  {transportationSummary.drivers.map((driver) => (
-                    <tr key={driver.id}>
-                      <td>
-                        <strong>
-                          {driver.camper_first_name}{" "}
-                          {driver.camper_last_name}
-                        </strong>
+  {drivers.length === 0 ? (
+    <div className="empty-state">
+      <h3>No drivers registered</h3>
 
-                        {driver.family_name && (
-                          <span className="driver-family-name">
-                            {driver.family_name} Family
-                          </span>
-                        )}
-                      </td>
+      <p>
+        Drivers will appear here once transportation
+        information has been submitted.
+      </p>
+    </div>
+  ) : (
+    <div className="table-wrap">
+      <table className="driver-table">
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Going Up</th>
+            <th>Coming Down</th>
+          </tr>
+        </thead>
 
-                      <td>
-                        {driver.empty_seats_to_camp ?? 0}
-                      </td>
+        <tbody>
+          {drivers.map((driver) => (
+            <tr key={driver.id}>
+              <td>
+                <strong>
+                  {driver.camper_first_name}{" "}
+                  {driver.camper_last_name}
+                </strong>
 
-                      <td>
-                        {driver.empty_seats_from_camp ?? 0}
-                      </td>
+                {driver.family_name && (
+                  <span className="driver-family-name">
+                    {driver.family_name} Family
+                  </span>
+                )}
+              </td>
 
-                     <td>
-  {driverIsAvailableAtCamp(driver)
-    ? driver.empty_seats_during_camp ?? 0
-    : "Not present for full days"}
-</td>
-                    </tr>
-                  ))}
-                </tbody>
+              <td>
+                {driver.empty_seats_to_camp ?? 0}
+              </td>
 
-                <tfoot>
-                  <tr>
-                    <th>Total Open Seats</th>
+              <td>
+                {driver.empty_seats_from_camp ?? 0}
+              </td>
+            </tr>
+          ))}
+        </tbody>
 
-                    <td>
-                      <strong>
-                        {transportationSummary.totals.toCamp}
+        <tfoot>
+          <tr>
+            <th>Total Open Seats</th>
+
+            <td>
+              <strong>
+                {transportationSummary.toCampTotal}
+              </strong>
+            </td>
+
+            <td>
+              <strong>
+                {transportationSummary.fromCampTotal}
+              </strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  )}
+</section>
+
+<section className="card">
+  <div className="section-header">
+    <div>
+      <h2>Driving While at Camp</h2>
+
+      <p>
+        A driver is counted only on days when they are
+        attending both breakfast and lunch.
+      </p>
+    </div>
+  </div>
+
+  {drivers.length === 0 ? (
+    <div className="empty-state">
+      <h3>No drivers registered</h3>
+
+      <p>
+        At-camp driving availability will appear here
+        once drivers are registered.
+      </p>
+    </div>
+  ) : (
+    <div className="table-wrap">
+      <table className="at-camp-driving-table">
+        <thead>
+          <tr>
+            <th>Driver</th>
+
+            {AT_CAMP_DRIVING_DAYS.map((day) => (
+              <th key={day.date}>{day.date}</th>
+            ))}
+          </tr>
+        </thead>
+
+        <tbody>
+          {drivers.map((driver) => (
+            <tr key={driver.id}>
+              <td>
+                <strong>
+                  {driver.camper_first_name}{" "}
+                  {driver.camper_last_name}
+                </strong>
+
+                {driver.family_name && (
+                  <span className="driver-family-name">
+                    {driver.family_name} Family
+                  </span>
+                )}
+              </td>
+
+              {AT_CAMP_DRIVING_DAYS.map((day) => {
+                const isAvailable =
+                  driverIsAvailableAtCampOnDay(
+                    driver,
+                    day
+                  );
+
+                return (
+                  <td key={day.date}>
+                    {isAvailable ? (
+                      <strong className="at-camp-seat-count">
+                        {driver.empty_seats_during_camp ?? 0}
                       </strong>
-                    </td>
+                    ) : (
+                      <span className="at-camp-unavailable">
+                        —
+                      </span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
 
-                    <td>
-                      <strong>
-                        {transportationSummary.totals.fromCamp}
-                      </strong>
-                    </td>
+        <tfoot>
+          <tr>
+            <th>Total Open Seats</th>
 
-                    <td>
-                      <strong>
-                        {transportationSummary.totals.duringCamp}
-                      </strong>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
-        </section>
+            {transportationSummary.atCampDays.map(
+              (day) => (
+                <td key={day.date}>
+                  <strong>{day.totalSeats}</strong>
+                </td>
+              )
+            )}
+          </tr>
+
+          <tr className="at-camp-driver-count-row">
+            <th>Drivers Present</th>
+
+            {transportationSummary.atCampDays.map(
+              (day) => (
+                <td key={day.date}>
+                  {day.availableDrivers.length}
+                </td>
+              )
+            )}
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  )}
+</section>
 
       </section>
 

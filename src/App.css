@@ -1641,3 +1641,48 @@ textarea {
     gap: 5px;
   }
 }
+
+.at-camp-driving-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.at-camp-driving-table th,
+.at-camp-driving-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #dbe3ec;
+}
+
+.at-camp-driving-table th:not(:first-child),
+.at-camp-driving-table td:not(:first-child) {
+  min-width: 90px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.at-camp-driving-table thead th {
+  background: #f8fafc;
+  font-size: 0.82rem;
+}
+
+.at-camp-driving-table tfoot th,
+.at-camp-driving-table tfoot td {
+  background: #f8fafc;
+  border-top: 2px solid #cbd5e1;
+}
+
+.at-camp-seat-count {
+  color: #166534;
+  font-size: 1rem;
+}
+
+.at-camp-unavailable {
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+.at-camp-driver-count-row th,
+.at-camp-driver-count-row td {
+  color: #475569;
+  font-size: 0.85rem;
+}
