@@ -47,7 +47,7 @@ export function formatDietaryNeeds(
   selections: DietarySelections,
   otherDietaryNeeds: string
 ): string {
-  const selectedLabels = DIETARY_OPTIONS
+  const selectedLabels: string[] = DIETARY_OPTIONS
     .filter((option) => selections[option.key])
     .map((option) => option.label);
 
