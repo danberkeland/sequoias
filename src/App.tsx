@@ -139,10 +139,10 @@ function App() {
     useState<Size>(DEFAULT_SIZE);
 
   const [dietarySelections, setDietarySelections] = useState(
-  () => createEmptyDietarySelections()
-);
+    () => createEmptyDietarySelections()
+  );
 
-const [otherDietaryNeeds, setOtherDietaryNeeds] = useState("");
+  const [otherDietaryNeeds, setOtherDietaryNeeds] = useState("");
 
   const [attendingFullCamp, setAttendingFullCamp] =
     useState(true);
@@ -209,11 +209,11 @@ const [otherDietaryNeeds, setOtherDietaryNeeds] = useState("");
 
 
   function toggleDietaryOption(option: DietaryOptionKey) {
-  setDietarySelections((current) => ({
-    ...current,
-    [option]: !current[option],
-  }));
-}
+    setDietarySelections((current) => ({
+      ...current,
+      [option]: !current[option],
+    }));
+  }
 
   useEffect(() => {
     const subscription =
@@ -288,42 +288,34 @@ const [otherDietaryNeeds, setOtherDietaryNeeds] = useState("");
    * visits the regular family page because admins are otherwise authorized to
    * read all camper records.
    */
-  useEffect(() => {
-    const currentUserSub = user?.userId;
+ useEffect(() => {
+  if (!user) {
+    setCampers([]);
+    return;
+  }
 
-    if (!currentUserSub) {
-      setCampers([]);
-      return;
-    }
+  const subscription =
+    client.models.Camper.observeQuery({
+      authMode: "userPool",
+    }).subscribe({
+      next: ({ items }) => {
+        setCampers([...items]);
+      },
 
-    const subscription =
-      client.models.Camper.observeQuery({
-        filter: {
-          owner: {
-            beginsWith: `${currentUserSub}::`,
-          },
-        },
-        authMode: "userPool",
-      }).subscribe({
-        next: ({ items }) => {
-          setCampers([...items]);
-        },
+      error: (error) => {
+        console.error(
+          "Family camper query error:",
+          error
+        );
 
-        error: (error) => {
-          console.error(
-            "Family camper query error:",
-            error
-          );
+        setCampers([]);
+      },
+    });
 
-          setCampers([]);
-        },
-      });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [client, user?.userId]);
-
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [client, user]);
   /**
    * Older camper records may not contain family_name.
    * Backfill it from the signed-in user's Cognito profile.
@@ -372,7 +364,7 @@ const [otherDietaryNeeds, setOtherDietaryNeeds] = useState("");
     setShirtSize(DEFAULT_SIZE);
     setSweatshirtSize(DEFAULT_SIZE);
     setDietarySelections(createEmptyDietarySelections());
-setOtherDietaryNeeds("");
+    setOtherDietaryNeeds("");
 
     setAttendingFullCamp(true);
     setAttendanceSchedule(
@@ -424,13 +416,13 @@ setOtherDietaryNeeds("");
     );
 
     const savedDietaryNeeds = parseDietaryNeeds(
-  camper.special_dietary_needs
-);
+      camper.special_dietary_needs
+    );
 
-setDietarySelections(savedDietaryNeeds.selections);
-setOtherDietaryNeeds(
-  savedDietaryNeeds.otherDietaryNeeds
-);
+    setDietarySelections(savedDietaryNeeds.selections);
+    setOtherDietaryNeeds(
+      savedDietaryNeeds.otherDietaryNeeds
+    );
 
     setAttendingFullCamp(isFullCamp);
 
@@ -438,13 +430,13 @@ setOtherDietaryNeeds(
       isFullCamp
         ? createFullAttendanceSchedule()
         : parseCamperAttendance(
-            camper.attendance_schedule
-          )
+          camper.attendance_schedule
+        )
     );
 
     setIsDriver(
       savedCamperCanDrive &&
-        (camper.is_driver ?? false)
+      (camper.is_driver ?? false)
     );
 
     setEmptySeatsToCamp(
@@ -560,10 +552,10 @@ setOtherDietaryNeeds(
 
       // Using null allows an existing value to be cleared during editing.
       special_dietary_needs:
-  formatDietaryNeeds(
-    dietarySelections,
-    otherDietaryNeeds
-  ) || null,
+        formatDietaryNeeds(
+          dietarySelections,
+          otherDietaryNeeds
+        ) || null,
 
       attending_full_camp: attendingFullCamp,
 
@@ -595,14 +587,14 @@ setOtherDietaryNeeds(
       const result =
         isEditing && camperIdBeingEdited
           ? await client.models.Camper.update({
-              id: camperIdBeingEdited,
-              ...camperData,
-            })
+            id: camperIdBeingEdited,
+            ...camperData,
+          })
           : await client.models.Camper.create({
-              ...camperData,
-              family_name:
-                familyName.trim() || undefined,
-            });
+            ...camperData,
+            family_name:
+              familyName.trim() || undefined,
+          });
 
       if (result.errors?.length) {
         console.error(
@@ -637,9 +629,9 @@ setOtherDietaryNeeds(
           currentCampers.map((camper) =>
             camper.id === camperIdBeingEdited
               ? ({
-                  ...camper,
-                  ...camperData,
-                } as Camper)
+                ...camper,
+                ...camperData,
+              } as Camper)
               : camper
           )
         );
@@ -654,9 +646,9 @@ setOtherDietaryNeeds(
           return alreadyExists
             ? currentCampers
             : [
-                ...currentCampers,
-                result.data as Camper,
-              ];
+              ...currentCampers,
+              result.data as Camper,
+            ];
         });
       }
 
@@ -803,10 +795,10 @@ setOtherDietaryNeeds(
             setSweatshirtSize={
               setSweatshirtSize
             }
-           dietarySelections={dietarySelections}
-toggleDietaryOption={toggleDietaryOption}
-otherDietaryNeeds={otherDietaryNeeds}
-setOtherDietaryNeeds={setOtherDietaryNeeds}
+            dietarySelections={dietarySelections}
+            toggleDietaryOption={toggleDietaryOption}
+            otherDietaryNeeds={otherDietaryNeeds}
+            setOtherDietaryNeeds={setOtherDietaryNeeds}
             canBeDriver={canBeDriver}
             isDriver={isDriver}
             setIsDriver={setIsDriver}

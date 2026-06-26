@@ -89,8 +89,8 @@ const schema = a.schema({
       isSLDCmember: a
         .boolean()
         .authorization((allow) => [
-          allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["create", "read", "update"]),
+          allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
         ]),
 
       isSLDCfee: a
