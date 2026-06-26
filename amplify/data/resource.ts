@@ -96,34 +96,34 @@ const schema = a.schema({
       isSLDCfee: a
         .boolean()
         .authorization((allow) => [
-          allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["create", "read", "update"]),
+          allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
         ]),
 
       isCampAccept: a
         .boolean()
         .authorization((allow) => [
-          allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["create", "read", "update"]),
+         allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
         ]),
 
       isCampFee: a
         .boolean()
         .authorization((allow) => [
-          allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["create", "read", "update"]),
+         allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
         ]),
 
       isCampWaiver: a
         .boolean()
         .authorization((allow) => [
-          allow.owner().to(["read"]),
-          allow.group("ADMINS").to(["create", "read", "update"]),
+         allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
         ]),
     })
     .authorization((allow) => [
       allow.owner(),
-      allow.group("ADMINS").to(["read", "update", "delete"]),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
     ]),
   SLDCApplication: a
     .model({
@@ -152,8 +152,8 @@ const schema = a.schema({
       application_version: a.string(),
     })
     .authorization((allow) => [
-      allow.owner(),
-      allow.group("ADMINS").to(["read", "update", "delete"]),
+     allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update","delete"]),
     ]),
 });
 
