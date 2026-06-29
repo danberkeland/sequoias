@@ -15,6 +15,8 @@ import {
   type DietarySelections,
 } from "../utils/dietaryNeeds";
 
+import { getBaseCampFee } from "../utils/camperUtils";
+
 type AddCamperCardProps = {
   campers: Camper[];
 
@@ -58,15 +60,15 @@ type AddCamperCardProps = {
 
   dietarySelections: DietarySelections;
 
-toggleDietaryOption: (
-  option: DietaryOptionKey
-) => void;
+  toggleDietaryOption: (
+    option: DietaryOptionKey
+  ) => void;
 
-otherDietaryNeeds: string;
+  otherDietaryNeeds: string;
 
-setOtherDietaryNeeds: (
-  value: string
-) => void;
+  setOtherDietaryNeeds: (
+    value: string
+  ) => void;
 
   canBeDriver: boolean;
 
@@ -131,9 +133,9 @@ function AddCamperCard({
   setSweatshirtSize,
 
   dietarySelections,
-toggleDietaryOption,
-otherDietaryNeeds,
-setOtherDietaryNeeds,
+  toggleDietaryOption,
+  otherDietaryNeeds,
+  setOtherDietaryNeeds,
 
   canBeDriver,
   isDriver,
@@ -246,7 +248,7 @@ setOtherDietaryNeeds,
                 }
               >
                 <option value="ATHLETE">
-                  Athlete — $525
+                  Athlete — ${getBaseCampFee()}
                 </option>
 
                 <option value="PARENT">
@@ -333,47 +335,47 @@ setOtherDietaryNeeds,
               </select>
             </label>
 
-            
-<div className="field field-full dietary-needs-field">
-  <span>Dietary Needs and Allergies</span>
 
- <p className="field-help">
-  We will make every effort to accommodate dietary needs and allergies.
-  Please provide this information now so our camp kitchen team can plan
-  safely and prepare appropriately.
-</p>
+            <div className="field field-full dietary-needs-field">
+              <span>Dietary Needs and Allergies</span>
 
-  <div className="dietary-option-grid">
-    {DIETARY_OPTIONS.map((option) => (
-      <label
-        key={option.key}
-        className="dietary-option"
-      >
-        <input
-          type="checkbox"
-          checked={dietarySelections[option.key]}
-          onChange={() =>
-            toggleDietaryOption(option.key)
-          }
-        />
+              <p className="field-help">
+                We will make every effort to accommodate dietary needs and allergies.
+                Please provide this information now so our camp kitchen team can plan
+                safely and prepare appropriately.
+              </p>
 
-        <span>{option.label}</span>
-      </label>
-    ))}
-  </div>
+              <div className="dietary-option-grid">
+                {DIETARY_OPTIONS.map((option) => (
+                  <label
+                    key={option.key}
+                    className="dietary-option"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={dietarySelections[option.key]}
+                      onChange={() =>
+                        toggleDietaryOption(option.key)
+                      }
+                    />
 
-  <label className="dietary-other-field">
-    <span>Other dietary need or allergy</span>
+                    <span>{option.label}</span>
+                  </label>
+                ))}
+              </div>
 
-    <input
-      value={otherDietaryNeeds}
-      onChange={(event) =>
-        setOtherDietaryNeeds(event.target.value)
-      }
-      placeholder="Optional — for example, no eggs, vegan, severe shellfish allergy"
-    />
-  </label>
-</div>
+              <label className="dietary-other-field">
+                <span>Other dietary need or allergy</span>
+
+                <input
+                  value={otherDietaryNeeds}
+                  onChange={(event) =>
+                    setOtherDietaryNeeds(event.target.value)
+                  }
+                  placeholder="Optional — for example, no eggs, vegan, severe shellfish allergy"
+                />
+              </label>
+            </div>
 
 
 
