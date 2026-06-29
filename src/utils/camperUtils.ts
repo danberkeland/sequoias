@@ -4,6 +4,30 @@ import {
   type AttendanceSchedule,
 } from "../constants/campSchedule";
 
+export const STANDARD_CAMP_FEE = 575;
+export const MB_CAMP_FEE = 375;
+
+function getSchoolCode(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return new URLSearchParams(window.location.search)
+    .get("school")
+    ?.trim()
+    .toLowerCase() ?? null;
+}
+
+export function getBaseCampFee(): number {
+  return getSchoolCode() === "mb"
+    ? MB_CAMP_FEE
+    : STANDARD_CAMP_FEE;
+}
+
+export function isMountainBrookRegistration(): boolean {
+  return getSchoolCode() === "mb";
+}
+
 export function formatCamperType(type: Camper["camper_type"]) {
   switch (type) {
     case "ATHLETE":
@@ -24,7 +48,7 @@ export function formatCamperType(type: Camper["camper_type"]) {
 export function getCamperFee(camper: Camper) {
   switch (camper.camper_type) {
     case "ATHLETE":
-      return 525;
+    return getBaseCampFee();
     case "NON_PARENT_ADULT_ALUMNI":
       return 100;
     case "SIBLING":
