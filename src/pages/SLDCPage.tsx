@@ -672,7 +672,7 @@ function SLDCPage() {
                                             <th scope="col">SLDC Fee</th>
                                             <th scope="col">Camp Fee</th>
                                             <th scope="col">Camper Type</th>
-                                            <th scope="col">Camp Waiver</th>
+                                            <th scope="col">SLDC Waiver</th>
                                         </tr>
 
                                         {family.campers.map((camper) => (
