@@ -52,12 +52,12 @@ const SLDC_WAIVER_TEXT = `I know that running and volunteering to work at club r
 const RRCA_CODE_OF_CONDUCT_TEXT = `Members will always show respect for other members and race volunteers. No member is to yell, taunt, or threaten another club member, volunteer, or event spectator. Members are not to use abusive or vulgar language or make racial, ethnic, or gender related slurs or derogatory comments at club events or make unwanted contact, physical or otherwise, with other members.`;
 
 function escapeHtml(value: unknown): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function SLDCPage() {
@@ -115,41 +115,41 @@ function SLDCPage() {
 
 
     useEffect(() => {
-  const camperSubscription =
-    client.models.Camper.observeQuery().subscribe({
-      next: ({ items, isSynced }) => {
-        /*
-         * Avoid replacing an optimistic checkbox update with
-         * an earlier local snapshot.
-         */
-        if (!isSynced) {
-          return;
-        }
+        const camperSubscription =
+            client.models.Camper.observeQuery().subscribe({
+                next: ({ items, isSynced }) => {
+                    /*
+                     * Avoid replacing an optimistic checkbox update with
+                     * an earlier local snapshot.
+                     */
+                    if (!isSynced) {
+                        return;
+                    }
 
-        setCampers([...items]);
-      },
+                    setCampers([...items]);
+                },
 
-      error: (error) => {
-        console.error("SLDC camper query error:", error);
-      },
-    });
+                error: (error) => {
+                    console.error("SLDC camper query error:", error);
+                },
+            });
 
-  const applicationSubscription =
-    client.models.SLDCApplication.observeQuery().subscribe({
-      next: ({ items }) => {
-        setApplications([...items]);
-      },
+        const applicationSubscription =
+            client.models.SLDCApplication.observeQuery().subscribe({
+                next: ({ items }) => {
+                    setApplications([...items]);
+                },
 
-      error: (error) => {
-        console.error("SLDC application query error:", error);
-      },
-    });
+                error: (error) => {
+                    console.error("SLDC application query error:", error);
+                },
+            });
 
-  return () => {
-    camperSubscription.unsubscribe();
-    applicationSubscription.unsubscribe();
-  };
-}, [client]);
+        return () => {
+            camperSubscription.unsubscribe();
+            applicationSubscription.unsubscribe();
+        };
+    }, [client]);
 
     function isFamilyStatusChecked(
         familyCampers: Camper[],
@@ -236,31 +236,31 @@ function SLDCPage() {
     }
 
     function printSLDCWaiver(
-    camper: Camper,
-    application: SLDCApplication
-  ) {
-    const printWindow = window.open(
-      "",
-      "_blank",
-      "width=900,height=1000"
-    );
+        camper: Camper,
+        application: SLDCApplication
+    ) {
+        const printWindow = window.open(
+            "",
+            "_blank",
+            "width=900,height=1000"
+        );
 
-    if (!printWindow) {
-      alert(
-        "The print window was blocked. Please allow pop-ups for this website and try again."
-      );
-      return;
-    }
+        if (!printWindow) {
+            alert(
+                "The print window was blocked. Please allow pop-ups for this website and try again."
+            );
+            return;
+        }
 
-    const camperName =
-      `${camper.camper_first_name ?? ""} ${camper.camper_last_name ?? ""
-        }`.trim();
+        const camperName =
+            `${camper.camper_first_name ?? ""} ${camper.camper_last_name ?? ""
+                }`.trim();
 
-    const signedDate = application.signed_at
-      ? new Date(application.signed_at).toLocaleString()
-      : "Not recorded";
+        const signedDate = application.signed_at
+            ? new Date(application.signed_at).toLocaleString()
+            : "Not recorded";
 
-    printWindow.document.write(`
+        printWindow.document.write(`
     <!doctype html>
     <html lang="en">
       <head>
@@ -465,14 +465,14 @@ function SLDCPage() {
             </span>
 
             ${escapeHtml(
-      [
-        application.races_or_info_1,
-        application.races_or_info_2,
-        application.races_or_info_3,
-      ]
-        .filter(Boolean)
-        .join(" — ") || "None provided"
-    )}
+            [
+                application.races_or_info_1,
+                application.races_or_info_2,
+                application.races_or_info_3,
+            ]
+                .filter(Boolean)
+                .join(" — ") || "None provided"
+        )}
           </div>
         </div>
 
@@ -483,9 +483,9 @@ function SLDCPage() {
 
           <p class="accepted">
             ${application.waiver_accepted
-        ? "✓ Waiver accepted"
-        : "Waiver acceptance not recorded"
-      }
+                ? "✓ Waiver accepted"
+                : "Waiver acceptance not recorded"
+            }
           </p>
         </div>
 
@@ -498,9 +498,9 @@ function SLDCPage() {
 
           <p class="accepted">
             ${application.code_of_conduct_accepted
-        ? "✓ Code of Conduct accepted"
-        : "Code of Conduct acceptance not recorded"
-      }
+                ? "✓ Code of Conduct accepted"
+                : "Code of Conduct acceptance not recorded"
+            }
           </p>
         </div>
 
@@ -513,8 +513,8 @@ function SLDCPage() {
             </span>
 
             ${escapeHtml(
-        application.signature_name || "Not provided"
-      )}
+                application.signature_name || "Not provided"
+            )}
           </div>
 
           <div class="signature-box">
@@ -523,9 +523,9 @@ function SLDCPage() {
             </span>
 
             ${escapeHtml(
-        application.parent_signature_name ||
-        "Not provided"
-      )}
+                application.parent_signature_name ||
+                "Not provided"
+            )}
           </div>
         </div>
 
@@ -537,9 +537,9 @@ function SLDCPage() {
         <div class="footer">
           Application version:
           ${escapeHtml(
-        application.application_version ||
-        "Not recorded"
-      )}
+                application.application_version ||
+                "Not recorded"
+            )}
 
           <br />
 
@@ -550,17 +550,17 @@ function SLDCPage() {
     </html>
   `);
 
-    printWindow.document.close();
-    printWindow.focus();
-  }
+        printWindow.document.close();
+        printWindow.focus();
+    }
 
-  function getCamperSLDCApplication(
-  camperId: string
-): SLDCApplication | undefined {
-  return applications.find(
-    (application) => application.camper_id === camperId
-  );
-}
+    function getCamperSLDCApplication(
+        camperId: string
+    ): SLDCApplication | undefined {
+        return applications.find(
+            (application) => application.camper_id === camperId
+        );
+    }
 
     return (
         <main className="app-shell">
@@ -726,45 +726,45 @@ function SLDCPage() {
                                                 <td>{formatCamperType(camper.camper_type)}</td>
 
                                                 <td>
-  <div className="admin-waiver-actions">
-    <input
-      type="checkbox"
-      checked={camper.isCampWaiver ?? false}
-      onChange={(event) =>
-        updateCamperStatus(camper.id, {
-          isCampWaiver: event.target.checked,
-        })
-      }
-      aria-label={`Camp waiver for ${camper.camper_first_name}`}
-    />
+                                                    <div className="admin-waiver-actions">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={camper.isCampWaiver ?? false}
+                                                            onChange={(event) =>
+                                                                updateCamperStatus(camper.id, {
+                                                                    isCampWaiver: event.target.checked,
+                                                                })
+                                                            }
+                                                            aria-label={`Camp waiver for ${camper.camper_first_name}`}
+                                                        />
 
-    {(() => {
-      const application = getCamperSLDCApplication(
-        camper.id
-      );
+                                                        {(() => {
+                                                            const application = getCamperSLDCApplication(
+                                                                camper.id
+                                                            );
 
-      if (!application) {
-        return (
-          <span className="waiver-not-submitted">
-            No SLDC waiver
-          </span>
-        );
-      }
+                                                            if (!application) {
+                                                                return (
+                                                                    <span className="waiver-not-submitted">
+                                                                        No SLDC waiver
+                                                                    </span>
+                                                                );
+                                                            }
 
-      return (
-        <button
-          type="button"
-          className="print-waiver-button"
-          onClick={() =>
-            printSLDCWaiver(camper, application)
-          }
-        >
-          Print Waiver
-        </button>
-      );
-    })()}
-  </div>
-</td>
+                                                            return (
+                                                                <button
+                                                                    type="button"
+                                                                    className="print-waiver-button"
+                                                                    onClick={() =>
+                                                                        printSLDCWaiver(camper, application)
+                                                                    }
+                                                                >
+                                                                    Print Waiver
+                                                                </button>
+                                                            );
+                                                        })()}
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </Fragment>

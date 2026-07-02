@@ -4,7 +4,7 @@ import {
   type AttendanceSchedule,
 } from "../constants/campSchedule";
 
-export const STANDARD_CAMP_FEE = 575;
+export const STANDARD_CAMP_FEE = 525;
 export const MB_CAMP_FEE = 375;
 
 function getSchoolCode(): string | null {
