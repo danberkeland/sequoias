@@ -66,13 +66,14 @@ function SLDCPaymentSection() {
             />
 
             <label className="field">
-              <span>Membership Payment</span>
-              <select name="os0" defaultValue="SLDC annual dues">
-                <option value="SLDC annual dues">
-                  SLDC annual dues — $25.00
-                </option>
+  <span>Membership Payment</span>
 
-                {/*
+  <select name="os0" defaultValue="SLDC  annual  dues">
+    <option value="SLDC  annual  dues">
+      SLDC annual dues — $25.00
+    </option>
+
+    {/*
     <option value="Pro-rated SLDC dues (April-June)">
       Pro-rated SLDC dues April-June — $18.75
     </option>
@@ -83,8 +84,8 @@ function SLDCPaymentSection() {
       Pro-rated SLDC dues Oct.-Dec. — $6.25
     </option>
     */}
-              </select>
-            </label>
+  </select>
+</label>
 
             <input type="hidden" name="currency_code" value="USD" />
 
