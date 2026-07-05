@@ -16,12 +16,8 @@ const campInfoLinks = [
     href: itineraryPdf,
   },
   {
-    label: "Camp Map",
-    href: "#",
-  },
-  {
-    label: "Emergency Contact Info",
-    href: "#",
+    label: "Camp Map & Emergency Contact Info",
+    href: "/campinfo",
   },
 ];
 

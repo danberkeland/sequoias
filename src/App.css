@@ -1686,3 +1686,119 @@ textarea {
   color: #475569;
   font-size: 0.85rem;
 }
+
+/* -------------------------------------------------------------------------- */
+/*                         Standalone Camp Info Page                          */
+/* -------------------------------------------------------------------------- */
+
+.camp-info-page {
+  padding-bottom: 48px;
+}
+
+.camp-info-hero-actions {
+  display: flex;
+  align-items: center;
+}
+
+.camp-info-card {
+  margin-top: 24px;
+}
+
+.camp-info-location {
+  max-width: 760px;
+}
+
+.camp-info-location p {
+  margin: 0 0 16px;
+  line-height: 1.65;
+}
+
+.camp-info-callout {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-left: 4px solid currentColor;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  line-height: 1.55;
+}
+
+.camp-info-details {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0 0;
+}
+
+.camp-info-details div {
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+}
+
+.camp-info-details dt {
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.camp-info-details dd {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.camp-info-emergency-intro {
+  max-width: 760px;
+  margin-bottom: 20px;
+  line-height: 1.65;
+}
+
+.camp-info-contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.camp-info-contact {
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+}
+
+.camp-info-contact-primary {
+  grid-column: span 3;
+}
+
+.camp-info-contact-label {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.camp-info-phone {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.camp-info-contact p:last-child {
+  margin-bottom: 0;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .camp-info-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .camp-info-contact-primary {
+    grid-column: auto;
+  }
+
+  .camp-info-hero-actions {
+    margin-top: 16px;
+  }
+}
