@@ -458,12 +458,18 @@ const paymentDonationAmount =
           )}
 
           <div className="camp-payment-instructions">
-            <h3>Payment Instructions</h3>
+  <h3>Payment Instructions</h3>
 
-            <p>
-              Payment options will be provided here.
-            </p>
-          </div>
+  <p>
+    To avoid incurring processing fees, we ask that all campers pay by check.
+    Please make checks payable to <strong>San Luis Distance Club (SLDC)</strong>{" "}
+    and give your check to your coach.
+  </p>
+
+  <p>
+    If you have any questions about the camp fee, please speak with your coach.
+  </p>
+</div>
         </div>
       )}
     </section>
