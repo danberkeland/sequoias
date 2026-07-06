@@ -5,7 +5,7 @@ import {
 } from "../constants/campSchedule";
 
 export const STANDARD_CAMP_FEE = 525;
-export const MB_CAMP_FEE = 375;
+export const MB_CAMP_FEE = 325;
 
 function getSchoolCode(): string | null {
   if (typeof window === "undefined") {
