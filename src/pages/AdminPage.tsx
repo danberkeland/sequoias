@@ -4,7 +4,7 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
 import { printSLDCWaiver } from "../utils/printSLDCWaiver";
-import { parseAttendanceSchedule } from "../utils/adminAttendance";
+
 import {
   getCampBirthdays,
   type CampBirthday,
