@@ -4,6 +4,7 @@ import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
 import { printSLDCWaiver } from "../utils/printSLDCWaiver";
+import { parseAttendanceSchedule } from "../utils/adminAttendance";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -11,8 +12,13 @@ import {
 import {
   CAMP_DAYS,
   CAMP_MEALS,
-  type AttendanceSchedule,
 } from "../constants/campSchedule";
+import {
+  AT_CAMP_DRIVING_DAYS,
+  driverIsAvailableAtCampOnDay,
+  getDrivers,
+  getTransportationSummary,
+} from "../utils/adminTransportation";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
@@ -38,95 +44,6 @@ type FamilyGroup = {
 const APP_SETTINGS_ID =
   "camp-registration-settings";
 
-
-
-function parseAttendanceSchedule(
-  value: Camper["attendance_schedule"]
-): AttendanceSchedule | null {
-  if (!value) {
-    return null;
-  }
-
-  if (typeof value === "string") {
-    try {
-      return JSON.parse(value) as AttendanceSchedule;
-    } catch (error) {
-      console.error(
-        "Could not parse camper attendance schedule:",
-        error
-      );
-
-      return null;
-    }
-  }
-
-  if (
-    typeof value === "object" &&
-    !Array.isArray(value)
-  ) {
-    return value as AttendanceSchedule;
-  }
-
-  return null;
-}
-
-
-
-/**
- * These are the camp days that have both breakfast and lunch.
- *
- * A driver is counted for daytime driving only if they are
- * attending both meals on that specific day.
- */
-const AT_CAMP_DRIVING_DAYS = CAMP_DAYS.flatMap((day) => {
-  const breakfast = day.meals[0];
-  const lunch = day.meals[1];
-
-  if (!breakfast || !lunch) {
-    return [];
-  }
-
-  return [
-    {
-      date: day.date,
-      breakfastId: breakfast.id,
-      lunchId: lunch.id,
-    },
-  ];
-});
-
-type AtCampDrivingDay =
-  (typeof AT_CAMP_DRIVING_DAYS)[number];
-
-/**
- * Returns true only when this driver is present for both
- * breakfast and lunch on the specified camp day.
- */
-function driverIsAvailableAtCampOnDay(
-  driver: Camper,
-  day: AtCampDrivingDay
-): boolean {
-  if (driver.is_driver !== true) {
-    return false;
-  }
-
-  /*
-   * Treat an omitted attendance setting as full camp.
-   * Full-camp drivers are present for every meal.
-   */
-  if (driver.attending_full_camp !== false) {
-    return true;
-  }
-
-  const schedule = parseAttendanceSchedule(
-    driver.attendance_schedule
-  );
-
-  return (
-    schedule?.[day.breakfastId] === true &&
-    schedule?.[day.lunchId] === true
-  );
-}
 
 
 function AdminPage() {
@@ -191,81 +108,19 @@ function AdminPage() {
     };
   }, [campers]);
 
-  
 
- const drivers = useMemo(() => {
-  return campers
-    .filter((camper) => camper.is_driver === true)
-    .sort((a, b) => {
-      const lastNameComparison = (
-        a.camper_last_name ?? ""
-      ).localeCompare(b.camper_last_name ?? "");
 
-      if (lastNameComparison !== 0) {
-        return lastNameComparison;
-      }
-
-      return (a.camper_first_name ?? "").localeCompare(
-        b.camper_first_name ?? ""
-      );
-    });
+  const drivers = useMemo(() => {
+  return getDrivers(campers);
 }, [campers]);
 
 const transportationSummary = useMemo(() => {
-  const toCampTotal = drivers.reduce(
-    (total, driver) =>
-      total +
-      Math.max(
-        0,
-        driver.empty_seats_to_camp ?? 0
-      ),
-    0
-  );
-
-  const fromCampTotal = drivers.reduce(
-    (total, driver) =>
-      total +
-      Math.max(
-        0,
-        driver.empty_seats_from_camp ?? 0
-      ),
-    0
-  );
-
-  const atCampDays = AT_CAMP_DRIVING_DAYS.map(
-    (day) => {
-      const availableDrivers = drivers.filter((driver) =>
-        driverIsAvailableAtCampOnDay(driver, day)
-      );
-
-      const totalSeats = availableDrivers.reduce(
-        (total, driver) =>
-          total +
-          Math.max(
-            0,
-            driver.empty_seats_during_camp ?? 0
-          ),
-        0
-      );
-
-      return {
-        ...day,
-        availableDrivers,
-        totalSeats,
-      };
-    }
-  );
-
-  return {
-    toCampTotal,
-    fromCampTotal,
-    atCampDays,
-  };
+  return getTransportationSummary(drivers);
 }, [drivers]);
 
   const campBirthdays = useMemo<CampBirthday[]>(() => {
-  return getCampBirthdays(campers, applications);
-}, [applications, campers]);
+    return getCampBirthdays(campers, applications);
+  }, [applications, campers]);
 
   const familyGroups = useMemo<FamilyGroup[]>(() => {
     const groups = new Map<string, FamilyGroup>();
@@ -857,190 +712,190 @@ const transportationSummary = useMemo(() => {
           )}
         </section>
         <section className="card">
-  <div className="section-header">
-    <div>
-      <h2>Driving To and From Camp</h2>
+          <div className="section-header">
+            <div>
+              <h2>Driving To and From Camp</h2>
 
-      <p>
-        Open passenger seats offered for travel to camp
-        and the trip home.
-      </p>
-    </div>
-  </div>
+              <p>
+                Open passenger seats offered for travel to camp
+                and the trip home.
+              </p>
+            </div>
+          </div>
 
-  {drivers.length === 0 ? (
-    <div className="empty-state">
-      <h3>No drivers registered</h3>
+          {drivers.length === 0 ? (
+            <div className="empty-state">
+              <h3>No drivers registered</h3>
 
-      <p>
-        Drivers will appear here once transportation
-        information has been submitted.
-      </p>
-    </div>
-  ) : (
-    <div className="table-wrap">
-      <table className="driver-table">
-        <thead>
-          <tr>
-            <th>Driver</th>
-            <th>Going Up</th>
-            <th>Coming Down</th>
-          </tr>
-        </thead>
+              <p>
+                Drivers will appear here once transportation
+                information has been submitted.
+              </p>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="driver-table">
+                <thead>
+                  <tr>
+                    <th>Driver</th>
+                    <th>Going Up</th>
+                    <th>Coming Down</th>
+                  </tr>
+                </thead>
 
-        <tbody>
-          {drivers.map((driver) => (
-            <tr key={driver.id}>
-              <td>
-                <strong>
-                  {driver.camper_first_name}{" "}
-                  {driver.camper_last_name}
-                </strong>
+                <tbody>
+                  {drivers.map((driver) => (
+                    <tr key={driver.id}>
+                      <td>
+                        <strong>
+                          {driver.camper_first_name}{" "}
+                          {driver.camper_last_name}
+                        </strong>
 
-                {driver.family_name && (
-                  <span className="driver-family-name">
-                    {driver.family_name} Family
-                  </span>
-                )}
-              </td>
+                        {driver.family_name && (
+                          <span className="driver-family-name">
+                            {driver.family_name} Family
+                          </span>
+                        )}
+                      </td>
 
-              <td>
-                {driver.empty_seats_to_camp ?? 0}
-              </td>
+                      <td>
+                        {driver.empty_seats_to_camp ?? 0}
+                      </td>
 
-              <td>
-                {driver.empty_seats_from_camp ?? 0}
-              </td>
-            </tr>
-          ))}
-        </tbody>
+                      <td>
+                        {driver.empty_seats_from_camp ?? 0}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
 
-        <tfoot>
-          <tr>
-            <th>Total Open Seats</th>
+                <tfoot>
+                  <tr>
+                    <th>Total Open Seats</th>
 
-            <td>
-              <strong>
-                {transportationSummary.toCampTotal}
-              </strong>
-            </td>
-
-            <td>
-              <strong>
-                {transportationSummary.fromCampTotal}
-              </strong>
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  )}
-</section>
-
-<section className="card">
-  <div className="section-header">
-    <div>
-      <h2>Driving While at Camp</h2>
-
-      <p>
-        A driver is counted only on days when they are
-        attending both breakfast and lunch.
-      </p>
-    </div>
-  </div>
-
-  {drivers.length === 0 ? (
-    <div className="empty-state">
-      <h3>No drivers registered</h3>
-
-      <p>
-        At-camp driving availability will appear here
-        once drivers are registered.
-      </p>
-    </div>
-  ) : (
-    <div className="table-wrap">
-      <table className="at-camp-driving-table">
-        <thead>
-          <tr>
-            <th>Driver</th>
-
-            {AT_CAMP_DRIVING_DAYS.map((day) => (
-              <th key={day.date}>{day.date}</th>
-            ))}
-          </tr>
-        </thead>
-
-        <tbody>
-          {drivers.map((driver) => (
-            <tr key={driver.id}>
-              <td>
-                <strong>
-                  {driver.camper_first_name}{" "}
-                  {driver.camper_last_name}
-                </strong>
-
-                {driver.family_name && (
-                  <span className="driver-family-name">
-                    {driver.family_name} Family
-                  </span>
-                )}
-              </td>
-
-              {AT_CAMP_DRIVING_DAYS.map((day) => {
-                const isAvailable =
-                  driverIsAvailableAtCampOnDay(
-                    driver,
-                    day
-                  );
-
-                return (
-                  <td key={day.date}>
-                    {isAvailable ? (
-                      <strong className="at-camp-seat-count">
-                        {driver.empty_seats_during_camp ?? 0}
+                    <td>
+                      <strong>
+                        {transportationSummary.toCampTotal}
                       </strong>
-                    ) : (
-                      <span className="at-camp-unavailable">
-                        —
-                      </span>
+                    </td>
+
+                    <td>
+                      <strong>
+                        {transportationSummary.fromCampTotal}
+                      </strong>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <section className="card">
+          <div className="section-header">
+            <div>
+              <h2>Driving While at Camp</h2>
+
+              <p>
+                A driver is counted only on days when they are
+                attending both breakfast and lunch.
+              </p>
+            </div>
+          </div>
+
+          {drivers.length === 0 ? (
+            <div className="empty-state">
+              <h3>No drivers registered</h3>
+
+              <p>
+                At-camp driving availability will appear here
+                once drivers are registered.
+              </p>
+            </div>
+          ) : (
+            <div className="table-wrap">
+              <table className="at-camp-driving-table">
+                <thead>
+                  <tr>
+                    <th>Driver</th>
+
+                    {AT_CAMP_DRIVING_DAYS.map((day) => (
+                      <th key={day.date}>{day.date}</th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {drivers.map((driver) => (
+                    <tr key={driver.id}>
+                      <td>
+                        <strong>
+                          {driver.camper_first_name}{" "}
+                          {driver.camper_last_name}
+                        </strong>
+
+                        {driver.family_name && (
+                          <span className="driver-family-name">
+                            {driver.family_name} Family
+                          </span>
+                        )}
+                      </td>
+
+                      {AT_CAMP_DRIVING_DAYS.map((day) => {
+                        const isAvailable =
+                          driverIsAvailableAtCampOnDay(
+                            driver,
+                            day
+                          );
+
+                        return (
+                          <td key={day.date}>
+                            {isAvailable ? (
+                              <strong className="at-camp-seat-count">
+                                {driver.empty_seats_during_camp ?? 0}
+                              </strong>
+                            ) : (
+                              <span className="at-camp-unavailable">
+                                —
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+
+                <tfoot>
+                  <tr>
+                    <th>Total Open Seats</th>
+
+                    {transportationSummary.atCampDays.map(
+                      (day) => (
+                        <td key={day.date}>
+                          <strong>{day.totalSeats}</strong>
+                        </td>
+                      )
                     )}
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
+                  </tr>
 
-        <tfoot>
-          <tr>
-            <th>Total Open Seats</th>
+                  <tr className="at-camp-driver-count-row">
+                    <th>Drivers Present</th>
 
-            {transportationSummary.atCampDays.map(
-              (day) => (
-                <td key={day.date}>
-                  <strong>{day.totalSeats}</strong>
-                </td>
-              )
-            )}
-          </tr>
-
-          <tr className="at-camp-driver-count-row">
-            <th>Drivers Present</th>
-
-            {transportationSummary.atCampDays.map(
-              (day) => (
-                <td key={day.date}>
-                  {day.availableDrivers.length}
-                </td>
-              )
-            )}
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  )}
-</section>
+                    {transportationSummary.atCampDays.map(
+                      (day) => (
+                        <td key={day.date}>
+                          {day.availableDrivers.length}
+                        </td>
+                      )
+                    )}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </section>
 
       </section>
 
