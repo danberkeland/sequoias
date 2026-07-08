@@ -9,16 +9,17 @@ import {
   getCampBirthdays,
   type CampBirthday,
 } from "../utils/adminBirthdays";
-import {
-  CAMP_DAYS,
-  CAMP_MEALS,
-} from "../constants/campSchedule";
+import { CAMP_DAYS } from "../constants/campSchedule";
 import {
   AT_CAMP_DRIVING_DAYS,
   driverIsAvailableAtCampOnDay,
   getDrivers,
   getTransportationSummary,
 } from "../utils/adminTransportation";
+import {
+  getMealSummary,
+  type MealSummary,
+} from "../utils/adminMeals";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
@@ -61,53 +62,9 @@ function AdminPage() {
   const [isSavingPhase, setIsSavingPhase] =
     useState(false);
 
-  const mealSummary = useMemo(() => {
-    const totals: Record<string, number> = {};
-
-    CAMP_MEALS.forEach((meal) => {
-      totals[meal.id] = 0;
-    });
-
-
-
-    let incompleteAttendanceRecords = 0;
-
-
-
-    campers.forEach((camper) => {
-      // Full-camp campers attend every scheduled meal.
-      if (camper.attending_full_camp === true) {
-        CAMP_MEALS.forEach((meal) => {
-          totals[meal.id] += 1;
-        });
-
-        return;
-      }
-
-
-
-      const schedule = parseAttendanceSchedule(
-        camper.attendance_schedule
-      );
-
-      if (!schedule) {
-        incompleteAttendanceRecords += 1;
-        return;
-      }
-
-      CAMP_MEALS.forEach((meal) => {
-        if (schedule[meal.id] === true) {
-          totals[meal.id] += 1;
-        }
-      });
-    });
-
-    return {
-      totals,
-      incompleteAttendanceRecords,
-    };
-  }, [campers]);
-
+  const mealSummary = useMemo<MealSummary>(() => {
+  return getMealSummary(campers);
+}, [campers]);
 
 
   const drivers = useMemo(() => {
