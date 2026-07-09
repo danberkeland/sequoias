@@ -25,6 +25,7 @@ function AdminPage() {
     campers,
     setCampers,
     applications,
+    campWaivers,
   } = useAdminCampData(client);
 
   const {
@@ -32,14 +33,15 @@ function AdminPage() {
     updateFamilyStatus,
     isFamilyStatusChecked,
   } = useCamperStatusUpdates(client, campers, setCampers);
-const {
-  mealSummary,
-  drivers,
-  transportationSummary,
-  campBirthdays,
-  familyGroups,
-  apparelSizeTotals,
-} = useAdminDerivedData(campers, applications);
+  const {
+    mealSummary,
+    drivers,
+    transportationSummary,
+    campBirthdays,
+    familyGroups,
+    apparelSizeTotals,
+    dietaryRestrictionSummary,
+  } = useAdminDerivedData(campers, applications);
   return (
     <main className="app-shell">
       <AdminHero
@@ -55,8 +57,9 @@ const {
         isSavingPhase={isSavingPhase}
         changeApplicationPhase={changeApplicationPhase}
         campBirthdays={campBirthdays}
-        mealSummary={mealSummary}
         apparelSizeTotals={apparelSizeTotals}
+        dietaryRestrictionSummary={dietaryRestrictionSummary}
+        mealSummary={mealSummary}
         drivers={drivers}
         transportationSummary={transportationSummary}
       />
@@ -64,6 +67,7 @@ const {
       <RegisteredCampersTable
         familyGroups={familyGroups}
         applications={applications}
+        campWaivers={campWaivers}
         updateCamperStatus={updateCamperStatus}
         updateFamilyStatus={updateFamilyStatus}
         isFamilyStatusChecked={isFamilyStatusChecked}

@@ -13,16 +13,15 @@ type SignCampWaiverProps = {
   ) => void;
 };
 
-const CAMP_WAIVER_VERSION = "SLDC-teen-cross-country-camp-waiver-2026";
+export const CAMP_WAIVER_VERSION =
+  "SLDC-teen-cross-country-camp-waiver-2026";
 
-const ACKNOWLEDGEMENT_AND_ASSUMPTION_OF_RISK_TEXT = `As the parent or legal guardian of the Participant, or as Participant myself, I fully understand that running and participating in Camp activities are potentially hazardous activities. Participant shall not participate in Camp activities unless medically able and properly trained. Participant agrees to abide by any decision of a coach relative to his/her ability to safely complete a run or other activity. I, for or as Participant, assume all risks associated with running and Camp activities including but not limited to falls, contact with other participants, the effects of weather, the conditions of the road/trail, traffic, all such risks being known and appreciated by me. Camp may also involve non-running activities that include, but may not be limited to, transportation by vehicle, social events, hiking, conditioning, stretching, and being around other teenage participants, and I, for or as Participant, voluntarily agree to assume any risk related to these non-sporting activities. Having read this waiver and knowing these facts, I, for or as Participant, waive and release the Road Runners Club of America, the San Luis Distance Club, and their sponsors, their representatives, Camp volunteers, and their successors from all claims and liabilities of any kind arising out of my participation in Camp even though that liability may arise out of carelessness or negligence on the part of Camp organizers, volunteers, and participants.`;
+export const ACKNOWLEDGEMENT_AND_ASSUMPTION_OF_RISK_TEXT = `As the parent or legal guardian of the Participant, or as Participant myself, I fully understand that running and participating in Camp activities are potentially hazardous activities. Participant shall not participate in Camp activities unless medically able and properly trained. Participant agrees to abide by any decision of a coach relative to his/her ability to safely complete a run or other activity. I, for or as Participant, assume all risks associated with running and Camp activities including but not limited to falls, contact with other participants, the effects of weather, the conditions of the road/trail, traffic, all such risks being known and appreciated by me. Camp may also involve non-running activities that include, but may not be limited to, transportation by vehicle, social events, hiking, conditioning, stretching, and being around other teenage participants, and I, for or as Participant, voluntarily agree to assume any risk related to these non-sporting activities. Having read this waiver and knowing these facts, I, for or as Participant, waive and release the Road Runners Club of America, the San Luis Distance Club, and their sponsors, their representatives, Camp volunteers, and their successors from all claims and liabilities of any kind arising out of my participation in Camp even though that liability may arise out of carelessness or negligence on the part of Camp organizers, volunteers, and participants.`;
 
-const GOOD_HEALTH_AND_MEDICAL_CARE_TEXT = `I warrant that to the best of my knowledge, Participant is in good health and has no physical condition that would prevent Participant from participating in Camp. Additionally, by signing below, I understand that in the event of an emergency, every effort will be made to contact Participant's parent/legal guardian and emergency contact. I hereby authorize any medical treatment deemed necessary in the event of any injury or illness while Participant is participating at Camp, including hospitalization and securing appropriate treatment, including surgery, for Participant. I accept responsibility for, and agree to pay, any and all of Participant's medical expenses incurred in connection with Camp.`;
-
+export const GOOD_HEALTH_AND_MEDICAL_CARE_TEXT = `I warrant that to the best of my knowledge, Participant is in good health and has no physical condition that would prevent Participant from participating in Camp. Additionally, by signing below, I understand that in the event of an emergency, every effort will be made to contact Participant's parent/legal guardian and emergency contact. I hereby authorize any medical treatment deemed necessary in the event of any injury or illness while Participant is participating at Camp, including hospitalization and securing appropriate treatment, including surgery, for Participant. I accept responsibility for, and agree to pay, any and all of Participant's medical expenses incurred in connection with Camp.`;
 function camperFullName(camper: Camper) {
-  return `${camper.camper_first_name ?? ""} ${
-    camper.camper_last_name ?? ""
-  }`.trim();
+  return `${camper.camper_first_name ?? ""} ${camper.camper_last_name ?? ""
+    }`.trim();
 }
 
 function camperDefaultsToMinor(camper: Camper) {
@@ -84,21 +83,21 @@ function SignCampWaiver({
   const waiverStatus =
     campers.length === 0
       ? {
-          label: "Camp Waivers",
-          text: "Add campers first",
-          className: "is-neutral",
-        }
+        label: "Camp Waivers",
+        text: "Add campers first",
+        className: "is-neutral",
+      }
       : allWaiversSigned
         ? {
-            label: "Camp Waivers",
-            text: "All signed",
-            className: "is-complete",
-          }
+          label: "Camp Waivers",
+          text: "All signed",
+          className: "is-complete",
+        }
         : {
-            label: "Camp Waivers",
-            text: `${signedWaiverCount} of ${campers.length} signed`,
-            className: "is-incomplete",
-          };
+          label: "Camp Waivers",
+          text: `${signedWaiverCount} of ${campers.length} signed`,
+          className: "is-incomplete",
+        };
 
   useEffect(() => {
     const sub = client.models.CampWaiver.observeQuery().subscribe({
@@ -254,8 +253,8 @@ function SignCampWaiver({
 
     const secondContactStarted = Boolean(
       emergencyContact2Name.trim() ||
-        emergencyContact2Phone.trim() ||
-        emergencyContact2Email.trim()
+      emergencyContact2Phone.trim() ||
+      emergencyContact2Email.trim()
     );
 
     if (
@@ -306,9 +305,9 @@ function SignCampWaiver({
     try {
       const result = selectedWaiver
         ? await client.models.CampWaiver.update({
-            id: selectedWaiver.id,
-            ...waiverData,
-          })
+          id: selectedWaiver.id,
+          ...waiverData,
+        })
         : await client.models.CampWaiver.create(waiverData);
 
       if (result.errors) {

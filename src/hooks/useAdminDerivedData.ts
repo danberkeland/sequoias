@@ -14,6 +14,11 @@ import {
   type ApparelSizeTotals,
 } from "../utils/adminApparel";
 
+import {
+  getDietaryRestrictionSummary,
+  type DietaryRestrictionSummary,
+} from "../utils/adminDietary";
+
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
 
@@ -45,12 +50,18 @@ export function useAdminDerivedData(
     return getFamilyGroups(campers);
   }, [campers]);
 
+  const dietaryRestrictionSummary =
+  useMemo<DietaryRestrictionSummary>(() => {
+    return getDietaryRestrictionSummary(campers);
+  }, [campers]);
+
   return {
-    mealSummary,
-    drivers,
-    transportationSummary,
-    campBirthdays,
-    familyGroups,
-    apparelSizeTotals,
-  };
+  mealSummary,
+  drivers,
+  transportationSummary,
+  campBirthdays,
+  familyGroups,
+  apparelSizeTotals,
+  dietaryRestrictionSummary,
+};
 }

@@ -8,9 +8,11 @@ import type {
 import { RegisteredCamperRow } from "./RegisteredCamperRow";
 
 type SLDCApplication = Schema["SLDCApplication"]["type"];
+type CampWaiver = Schema["CampWaiver"]["type"];
 
 type RegisteredCampersTableProps = {
   familyGroups: FamilyGroup[];
+  campWaivers: CampWaiver[];
   applications: SLDCApplication[];
   updateCamperStatus: (
     camperId: string,
@@ -24,6 +26,7 @@ type RegisteredCampersTableProps = {
   isFamilyStatusChecked: (
     familyCampers: FamilyGroup["campers"],
     field: FamilyStatusField
+    
   ) => boolean;
 };
 
@@ -83,6 +86,7 @@ function formatCampFee(amount: number): string {
 export function RegisteredCampersTable({
   familyGroups,
   applications,
+  campWaivers,
   updateCamperStatus,
   updateFamilyStatus,
   isFamilyStatusChecked,
@@ -97,6 +101,14 @@ export function RegisteredCampersTable({
       (application) => application.camper_id === camperId
     );
   }
+
+  function getCamperCampWaiver(
+  camperId: string
+): CampWaiver | undefined {
+  return campWaivers.find(
+    (waiver) => waiver.camper_id === camperId
+  );
+}
 
   function toggleFamily(familyKey: string) {
     setExpandedFamilyKeys((current) => {
@@ -289,16 +301,13 @@ export function RegisteredCampersTable({
 
                         <tbody>
                           {family.campers.map((camper) => (
-                            <RegisteredCamperRow
-                              key={camper.id}
-                              camper={camper}
-                              application={getCamperSLDCApplication(
-                                camper.id
-                              )}
-                              updateCamperStatus={
-                                updateCamperStatus
-                              }
-                            />
+                           <RegisteredCamperRow
+  key={camper.id}
+  camper={camper}
+  application={getCamperSLDCApplication(camper.id)}
+  campWaiver={getCamperCampWaiver(camper.id)}
+  updateCamperStatus={updateCamperStatus}
+/>
                           ))}
                         </tbody>
                       </table>

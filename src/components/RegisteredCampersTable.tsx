@@ -17,6 +17,8 @@ type RegisteredCampersTableProps = {
   ) => Promise<void>;
 };
 
+
+
 function RegisteredCampersTable({
   campers,
   editCamper,

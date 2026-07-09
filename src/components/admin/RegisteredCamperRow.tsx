@@ -1,12 +1,14 @@
 import type { Schema } from "../../../amplify/data/resource";
 import type { CamperStatusUpdate } from "../../hooks/useCamperStatusUpdates";
 import { printSLDCWaiver } from "../../utils/printSLDCWaiver";
+import { printCampWaiver } from "../../utils/printCampWaiver";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
 
 type RegisteredCamperRowProps = {
   camper: Camper;
+  campWaiver?: CampWaiver;
   application?: SLDCApplication;
   updateCamperStatus: (
     camperId: string,
@@ -14,9 +16,12 @@ type RegisteredCamperRowProps = {
   ) => Promise<void>;
 };
 
+type CampWaiver = Schema["CampWaiver"]["type"];
+
 export function RegisteredCamperRow({
   camper,
   application,
+  campWaiver,
   updateCamperStatus,
 }: RegisteredCamperRowProps) {
   return (
@@ -81,16 +86,27 @@ export function RegisteredCamperRow({
       </td>
 
       <td>
-        <input
-          type="checkbox"
-          checked={camper.isCampWaiver ?? false}
-          onChange={(event) =>
-            updateCamperStatus(camper.id, {
-              isCampWaiver: event.target.checked,
-            })
-          }
-          aria-label={`Camp waiver for ${camper.camper_first_name}`}
-        />
+        {!campWaiver ? (
+          <span className="waiver-not-submitted">
+            Not submitted
+          </span>
+        ) : (
+          <div className="admin-waiver-actions">
+            <span className="waiver-submitted">
+              Submitted
+            </span>
+
+            <button
+              type="button"
+              className="print-waiver-button"
+              onClick={() =>
+                printCampWaiver(camper, campWaiver)
+              }
+            >
+              Print Waiver
+            </button>
+          </div>
+        )}
       </td>
 
       <td>{camper.camper_type ?? "Not selected"}</td>
@@ -129,11 +145,9 @@ export function RegisteredCamperRow({
 
       <td>
         {camper.is_driver
-          ? `Driver — ${
-              camper.empty_seats_to_camp ?? 0
-            } up, ${
-              camper.empty_seats_from_camp ?? 0
-            } home`
+          ? `Driver — ${camper.empty_seats_to_camp ?? 0
+          } up, ${camper.empty_seats_from_camp ?? 0
+          } home`
           : "Not driving"}
       </td>
     </tr>
