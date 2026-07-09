@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
 import { useApplicationStage } from "../hooks/useApplicationStage";
 import { useAdminCampData } from "../hooks/useAdminCampData";
@@ -13,6 +12,7 @@ import { DrivingToFromCampCard } from "../components/admin/DrivingToFromCampCard
 import { DrivingAtCampCard } from "../components/admin/DrivingAtCampCard";
 import { CampOverviewStats } from "../components/admin/CampOverviewStats";
 import { RegisteredCampersTable } from "../components/admin/RegisteredCampersTable";
+import { AdminHero } from "../components/admin/AdminHero";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -78,30 +78,10 @@ function AdminPage() {
 
   return (
     <main className="app-shell">
-      <section className="hero-card">
-        <div>
-          <p className="eyebrow">Sequoias Camp</p>
-          <h1>Administrator Dashboard</h1>
-          <p className="subtitle">
-            Review camper registrations, waivers, attendance, and payments.
-          </p>
-        </div>
-
-        <div className="account-box">
-          <p className="account-label">Administrator</p>
-          <p className="account-email">
-            {user?.signInDetails?.loginId}
-          </p>
-
-          <Link to="/" className="secondary-button">
-            Family application
-          </Link>
-
-          <button className="secondary-button" onClick={signOut}>
-            Sign out
-          </button>
-        </div>
-      </section>
+      <AdminHero
+        loginId={user?.signInDetails?.loginId}
+        signOut={signOut}
+      />
 
       <section className="card">
         <div className="section-header">
