@@ -27,6 +27,59 @@ type RegisteredCampersTableProps = {
   ) => boolean;
 };
 
+const ATHLETE_CAMP_FEE = 575;
+const ADDITIONAL_ADULT_CAMP_FEE = 100;
+const SIBLING_CAMP_FEE = 50;
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
+function getFamilyCampFeeAmount(
+  family: FamilyGroup
+): number {
+  const athleteCount = family.campers.filter(
+    (camper) => camper.camper_type === "ATHLETE"
+  ).length;
+
+  const parentCount = family.campers.filter(
+    (camper) => camper.camper_type === "PARENT"
+  ).length;
+
+  const additionalAdultCount = family.campers.filter(
+    (camper) =>
+      camper.camper_type === "NON_PARENT_ADULT_ALUMNI"
+  ).length;
+
+  const siblingCount = family.campers.filter(
+    (camper) => camper.camper_type === "SIBLING"
+  ).length;
+
+  /*
+   * One parent is included with the family camp fee.
+   * Additional parents are charged as additional adults.
+   */
+  const includedParentCount = athleteCount > 0 ? 1 : 0;
+
+  const paidParentCount = Math.max(
+    0,
+    parentCount - includedParentCount
+  );
+
+  return (
+    athleteCount * ATHLETE_CAMP_FEE +
+    paidParentCount * ADDITIONAL_ADULT_CAMP_FEE +
+    additionalAdultCount * ADDITIONAL_ADULT_CAMP_FEE +
+    siblingCount * SIBLING_CAMP_FEE
+  );
+}
+
+function formatCampFee(amount: number): string {
+  return currencyFormatter.format(amount);
+}
+
 export function RegisteredCampersTable({
   familyGroups,
   applications,
@@ -135,10 +188,18 @@ export function RegisteredCampersTable({
                     <span>
                       <strong>{family.name}</strong>
 
-                      <span className="family-member-count">
-                        {family.campers.length === 1
-                          ? "1 registered member"
-                          : `${family.campers.length} registered members`}
+                      <span className="family-card-meta">
+                        <span className="family-member-count">
+                          {family.campers.length === 1
+                            ? "1 registered member"
+                            : `${family.campers.length} registered members`}
+                        </span>
+
+                        <span className="family-camp-fee-pill">
+                          Camp Fee: {formatCampFee(
+                            getFamilyCampFeeAmount(family)
+                          )}
+                        </span>
                       </span>
                     </span>
                   </button>

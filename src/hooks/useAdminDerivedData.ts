@@ -1,29 +1,25 @@
 import { useMemo } from "react";
 import type { Schema } from "../../amplify/data/resource";
-import {
-  getCampBirthdays,
-  type CampBirthday,
-} from "../utils/adminBirthdays";
-import {
-  getFamilyGroups,
-  type FamilyGroup,
-} from "../utils/adminFamilies";
-import {
-  getMealSummary,
-  type MealSummary,
-} from "../utils/adminMeals";
+import { getCampBirthdays, type CampBirthday } from "../utils/adminBirthdays";
+import { getFamilyGroups, type FamilyGroup } from "../utils/adminFamilies";
+import { getMealSummary, type MealSummary } from "../utils/adminMeals";
 import {
   getDrivers,
   getTransportationSummary,
   type TransportationSummary,
 } from "../utils/adminTransportation";
 
+import {
+  getApparelSizeTotals,
+  type ApparelSizeTotals,
+} from "../utils/adminApparel";
+
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
 
 export function useAdminDerivedData(
   campers: Camper[],
-  applications: SLDCApplication[]
+  applications: SLDCApplication[],
 ) {
   const mealSummary = useMemo<MealSummary>(() => {
     return getMealSummary(campers);
@@ -33,10 +29,13 @@ export function useAdminDerivedData(
     return getDrivers(campers);
   }, [campers]);
 
-  const transportationSummary =
-    useMemo<TransportationSummary>(() => {
-      return getTransportationSummary(drivers);
-    }, [drivers]);
+  const apparelSizeTotals = useMemo<ApparelSizeTotals>(() => {
+    return getApparelSizeTotals(campers);
+  }, [campers]);
+
+  const transportationSummary = useMemo<TransportationSummary>(() => {
+    return getTransportationSummary(drivers);
+  }, [drivers]);
 
   const campBirthdays = useMemo<CampBirthday[]>(() => {
     return getCampBirthdays(campers, applications);
@@ -52,5 +51,6 @@ export function useAdminDerivedData(
     transportationSummary,
     campBirthdays,
     familyGroups,
+    apparelSizeTotals,
   };
 }

@@ -32,14 +32,14 @@ function AdminPage() {
     updateFamilyStatus,
     isFamilyStatusChecked,
   } = useCamperStatusUpdates(client, campers, setCampers);
-
-  const {
-    mealSummary,
-    drivers,
-    transportationSummary,
-    campBirthdays,
-    familyGroups,
-  } = useAdminDerivedData(campers, applications);
+const {
+  mealSummary,
+  drivers,
+  transportationSummary,
+  campBirthdays,
+  familyGroups,
+  apparelSizeTotals,
+} = useAdminDerivedData(campers, applications);
   return (
     <main className="app-shell">
       <AdminHero
@@ -56,6 +56,7 @@ function AdminPage() {
         changeApplicationPhase={changeApplicationPhase}
         campBirthdays={campBirthdays}
         mealSummary={mealSummary}
+        apparelSizeTotals={apparelSizeTotals}
         drivers={drivers}
         transportationSummary={transportationSummary}
       />

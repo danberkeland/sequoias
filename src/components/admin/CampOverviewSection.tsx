@@ -8,6 +8,8 @@ import { CampOverviewStats } from "./CampOverviewStats";
 import { DrivingAtCampCard } from "./DrivingAtCampCard";
 import { DrivingToFromCampCard } from "./DrivingToFromCampCard";
 import { MealCountsCard } from "./MealCountsCard";
+import type { ApparelSizeTotals } from "../../utils/adminApparel";
+import { ApparelSizeTotalsCard } from "./ApparelSizeTotalsCard";
 
 type Camper = Schema["Camper"]["type"];
 type SLDCApplication = Schema["SLDCApplication"]["type"];
@@ -23,6 +25,7 @@ type CampOverviewSectionProps = {
   mealSummary: MealSummary;
   drivers: Camper[];
   transportationSummary: TransportationSummary;
+  apparelSizeTotals: ApparelSizeTotals;
 };
 
 export function CampOverviewSection({
@@ -36,6 +39,7 @@ export function CampOverviewSection({
   mealSummary,
   drivers,
   transportationSummary,
+  apparelSizeTotals,
 }: CampOverviewSectionProps) {
   return (
     <section className="card">
@@ -59,6 +63,10 @@ export function CampOverviewSection({
       />
 
       <CampBirthdaysCard campBirthdays={campBirthdays} />
+
+      <ApparelSizeTotalsCard
+  apparelSizeTotals={apparelSizeTotals}
+/>
 
       <MealCountsCard
         registeredCamperCount={campers.length}
