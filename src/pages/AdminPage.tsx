@@ -6,6 +6,7 @@ import type { Schema } from "../../amplify/data/resource";
 import { printSLDCWaiver } from "../utils/printSLDCWaiver";
 import { useApplicationStage } from "../hooks/useApplicationStage";
 import { useAdminCampData } from "../hooks/useAdminCampData";
+import { useCamperStatusUpdates } from "../hooks/useCamperStatusUpdates";
 
 import {
   getCampBirthdays,
@@ -27,170 +28,55 @@ import {
   type FamilyGroup,
 } from "../utils/adminFamilies";
 
-type Camper = Schema["Camper"]["type"];
+
 type SLDCApplication = Schema["SLDCApplication"]["type"];
-type CamperStatusUpdate = {
-  isSLDCmember?: boolean;
-  isSLDCfee?: boolean;
-  isCampAccept?: boolean;
-  isCampFee?: boolean;
-  isCampWaiver?: boolean;
-};
-
-type FamilyStatusField =
-  | "isSLDCfee"
-  | "isCampAccept"
-  | "isCampFee";
-
 
 
 function AdminPage() {
   const client = useMemo(() => generateClient<Schema>(), []);
   const { user, signOut } = useAuthenticator();
   const {
-  isFinalPhase,
-  settingsLoaded,
-  isSavingPhase,
-  changeApplicationPhase,
-} = useApplicationStage();
+    isFinalPhase,
+    settingsLoaded,
+    isSavingPhase,
+    changeApplicationPhase,
+  } = useApplicationStage();
 
-const {
-  campers,
-  setCampers,
-  applications,
-} = useAdminCampData(client);
+  const {
+    campers,
+    setCampers,
+    applications,
+  } = useAdminCampData(client);
+
+  const {
+    updateCamperStatus,
+    updateFamilyStatus,
+    isFamilyStatusChecked,
+  } = useCamperStatusUpdates(client, campers, setCampers);
 
   const mealSummary = useMemo<MealSummary>(() => {
-  return getMealSummary(campers);
-}, [campers]);
+    return getMealSummary(campers);
+  }, [campers]);
 
 
   const drivers = useMemo(() => {
-  return getDrivers(campers);
-}, [campers]);
+    return getDrivers(campers);
+  }, [campers]);
 
-const transportationSummary = useMemo(() => {
-  return getTransportationSummary(drivers);
-}, [drivers]);
+  const transportationSummary = useMemo(() => {
+    return getTransportationSummary(drivers);
+  }, [drivers]);
 
   const campBirthdays = useMemo<CampBirthday[]>(() => {
     return getCampBirthdays(campers, applications);
   }, [applications, campers]);
 
   const familyGroups = useMemo<FamilyGroup[]>(() => {
-  return getFamilyGroups(campers);
-}, [campers]);
-
-  
+    return getFamilyGroups(campers);
+  }, [campers]);
 
 
-  function isFamilyStatusChecked(
-    familyCampers: Camper[],
-    field: FamilyStatusField
-  ) {
-    return (
-      familyCampers.length > 0 &&
-      familyCampers.every((camper) => camper[field] === true)
-    );
-  }
 
-  async function updateFamilyStatus(
-    familyCampers: Camper[],
-    field: FamilyStatusField,
-    checked: boolean
-  ) {
-    let updates: CamperStatusUpdate;
-
-    switch (field) {
-      case "isSLDCfee":
-        updates = {
-          isSLDCfee: checked,
-        };
-        break;
-
-      case "isCampAccept":
-        updates = {
-          isCampAccept: checked,
-        };
-        break;
-
-      case "isCampFee":
-        updates = {
-          isCampFee: checked,
-        };
-        break;
-    }
-
-    await Promise.all(
-      familyCampers.map((camper) =>
-        updateCamperStatus(camper.id, updates)
-      )
-    );
-  }
-
-  async function updateCamperStatus(
-    camperId: string,
-    updates: CamperStatusUpdate
-  ) {
-    const originalCamper = campers.find((camper) => camper.id === camperId);
-
-    if (!originalCamper) {
-      return;
-    }
-
-    // Update the checkbox immediately
-    setCampers((currentCampers) =>
-      currentCampers.map((camper) =>
-        camper.id === camperId
-          ? ({ ...camper, ...updates } as Camper)
-          : camper
-      )
-    );
-
-    try {
-      const { data, errors } = await client.models.Camper.update({
-        id: camperId,
-        ...updates,
-      });
-
-      if (errors?.length) {
-        console.error("Camper status update errors:", errors);
-
-        // Roll back the checkbox
-        setCampers((currentCampers) =>
-          currentCampers.map((camper) =>
-            camper.id === camperId ? originalCamper : camper
-          )
-        );
-
-        alert("There was a problem updating the camper status.");
-        return;
-      }
-
-      console.log("Camper status updated:", data);
-
-      if (data) {
-        setCampers((currentCampers) =>
-          currentCampers.map((camper) =>
-            camper.id === camperId
-              ? ({ ...camper, ...updates } as Camper)
-              : camper
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Unexpected camper status update error:", error);
-
-      // Roll back the checkbox
-      setCampers((currentCampers) =>
-        currentCampers.map((camper) =>
-          camper.id === camperId ? originalCamper : camper
-        )
-      );
-
-      alert("Unexpected error updating camper status.");
-    }
-  }
 
 
   function getCamperSLDCApplication(
