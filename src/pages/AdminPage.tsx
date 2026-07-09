@@ -12,6 +12,7 @@ import { CampBirthdaysCard } from "../components/admin/CampBirthdaysCard";
 import { MealCountsCard } from "../components/admin/MealCountsCard";
 import { DrivingToFromCampCard } from "../components/admin/DrivingToFromCampCard";
 import { DrivingAtCampCard } from "../components/admin/DrivingAtCampCard";
+import { CampOverviewStats } from "../components/admin/CampOverviewStats";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -89,11 +90,6 @@ function AdminPage() {
     );
   }
 
-  function camperHasSLDCApplication(
-    camperId: string
-  ): boolean {
-    return Boolean(getCamperSLDCApplication(camperId));
-  }
 
   return (
     <main className="app-shell">
@@ -137,29 +133,10 @@ function AdminPage() {
           />
 
         </div>
-        <div className="admin-summary-grid">
-          <div className="admin-summary-box">
-            <span>Registered Campers</span>
-            <strong>{campers.length}</strong>
-          </div>
-
-
-          <div className="admin-summary-box">
-            <span>SLDC Applications</span>
-            <strong>{applications.length}</strong>
-          </div>
-
-          <div className="admin-summary-box">
-            <span>Waivers Remaining</span>
-            <strong>
-              {
-                campers.filter(
-                  (camper) => !camperHasSLDCApplication(camper.id)
-                ).length
-              }
-            </strong>
-          </div>
-        </div>
+        <CampOverviewStats
+          campers={campers}
+          applications={applications}
+        />
         <CampBirthdaysCard campBirthdays={campBirthdays} />
         <MealCountsCard
           registeredCamperCount={campers.length}
