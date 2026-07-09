@@ -3,7 +3,6 @@ import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
-import { printSLDCWaiver } from "../utils/printSLDCWaiver";
 import { useApplicationStage } from "../hooks/useApplicationStage";
 import { useAdminCampData } from "../hooks/useAdminCampData";
 import { useCamperStatusUpdates } from "../hooks/useCamperStatusUpdates";
@@ -13,6 +12,7 @@ import { MealCountsCard } from "../components/admin/MealCountsCard";
 import { DrivingToFromCampCard } from "../components/admin/DrivingToFromCampCard";
 import { DrivingAtCampCard } from "../components/admin/DrivingAtCampCard";
 import { CampOverviewStats } from "../components/admin/CampOverviewStats";
+import { RegisteredCamperRow } from "../components/admin/RegisteredCamperRow";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -266,132 +266,12 @@ function AdminPage() {
                     </tr>
 
                     {family.campers.map((camper) => (
-                      <tr key={camper.id}>
-                        <td className="family-camper-name">
-                          <strong>
-                            {camper.camper_first_name}{" "}
-                            {camper.camper_last_name}
-                          </strong>
-                        </td>
-
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={camper.isSLDCmember ?? false}
-                            onChange={(event) =>
-                              updateCamperStatus(camper.id, {
-                                isSLDCmember: event.target.checked,
-                              })
-                            }
-                            aria-label={`SLDC membership for ${camper.camper_first_name}`}
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={camper.isSLDCfee ?? false}
-                            onChange={(event) =>
-                              updateCamperStatus(camper.id, {
-                                isSLDCfee: event.target.checked,
-                              })
-                            }
-                            aria-label={`SLDC fee for ${camper.camper_first_name}`}
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={camper.isCampAccept ?? false}
-                            onChange={(event) =>
-                              updateCamperStatus(camper.id, {
-                                isCampAccept: event.target.checked,
-                              })
-                            }
-                            aria-label={`Camp acceptance for ${camper.camper_first_name}`}
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={camper.isCampFee ?? false}
-                            onChange={(event) =>
-                              updateCamperStatus(camper.id, {
-                                isCampFee: event.target.checked,
-                              })
-                            }
-                            aria-label={`Camp fee for ${camper.camper_first_name}`}
-                          />
-                        </td>
-
-                        <td>
-                          <input
-                            type="checkbox"
-                            checked={camper.isCampWaiver ?? false}
-                            onChange={(event) =>
-                              updateCamperStatus(camper.id, {
-                                isCampWaiver: event.target.checked,
-                              })
-                            }
-                            aria-label={`Camp waiver for ${camper.camper_first_name}`}
-                          />
-                        </td>
-
-                        <td>{camper.camper_type ?? "Not selected"}</td>
-
-                        <td>
-                          {camper.attending_full_camp
-                            ? "Full camp"
-                            : "Partial camp"}
-                        </td>
-
-                        <td>
-                          {(() => {
-                            const application =
-                              getCamperSLDCApplication(camper.id);
-
-                            if (!application) {
-                              return (
-                                <span className="waiver-not-submitted">
-                                  Not submitted
-                                </span>
-                              );
-                            }
-
-                            return (
-                              <div className="admin-waiver-actions">
-                                <span className="waiver-submitted">
-                                  Submitted
-                                </span>
-
-                                <button
-                                  type="button"
-                                  className="print-waiver-button"
-                                  onClick={() =>
-                                    printSLDCWaiver(camper, application)
-                                  }
-                                >
-                                  Print Waiver
-                                </button>
-                              </div>
-                            );
-                          })()}
-                        </td>
-
-                        <td>
-                          {camper.special_dietary_needs || "None"}
-                        </td>
-
-                        <td>
-                          {camper.is_driver
-                            ? `Driver — ${camper.empty_seats_to_camp ?? 0
-                            } up, ${camper.empty_seats_from_camp ?? 0
-                            } home`
-                            : "Not driving"}
-                        </td>
-                      </tr>
+                      <RegisteredCamperRow
+                        key={camper.id}
+                        camper={camper}
+                        application={getCamperSLDCApplication(camper.id)}
+                        updateCamperStatus={updateCamperStatus}
+                      />
                     ))}
                   </Fragment>
                 ))}
