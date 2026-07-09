@@ -8,23 +8,7 @@ import { useCamperStatusUpdates } from "../hooks/useCamperStatusUpdates";
 import { RegisteredCampersTable } from "../components/admin/RegisteredCampersTable";
 import { AdminHero } from "../components/admin/AdminHero";
 import { CampOverviewSection } from "../components/admin/CampOverviewSection";
-import {
-  getCampBirthdays,
-  type CampBirthday,
-} from "../utils/adminBirthdays";
-
-import {
-  getDrivers,
-  getTransportationSummary,
-} from "../utils/adminTransportation";
-import {
-  getMealSummary,
-  type MealSummary,
-} from "../utils/adminMeals";
-import {
-  getFamilyGroups,
-  type FamilyGroup,
-} from "../utils/adminFamilies";
+import { useAdminDerivedData } from "../hooks/useAdminDerivedData";
 
 
 function AdminPage() {
@@ -49,28 +33,13 @@ function AdminPage() {
     isFamilyStatusChecked,
   } = useCamperStatusUpdates(client, campers, setCampers);
 
-  const mealSummary = useMemo<MealSummary>(() => {
-    return getMealSummary(campers);
-  }, [campers]);
-
-
-  const drivers = useMemo(() => {
-    return getDrivers(campers);
-  }, [campers]);
-
-  const transportationSummary = useMemo(() => {
-    return getTransportationSummary(drivers);
-  }, [drivers]);
-
-  const campBirthdays = useMemo<CampBirthday[]>(() => {
-    return getCampBirthdays(campers, applications);
-  }, [applications, campers]);
-
-  const familyGroups = useMemo<FamilyGroup[]>(() => {
-    return getFamilyGroups(campers);
-  }, [campers]);
-
-
+  const {
+    mealSummary,
+    drivers,
+    transportationSummary,
+    campBirthdays,
+    familyGroups,
+  } = useAdminDerivedData(campers, applications);
   return (
     <main className="app-shell">
       <AdminHero
