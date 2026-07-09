@@ -2,65 +2,59 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
   CampWaiver: a
-  .model({
-    camper_id: a.id().required(),
-    participant_name: a.string().required(),
-    participant_is_minor: a.boolean().required(),
-    participant_signature_name: a.string().required(),
-    parent_guardian_name: a.string(),
-    parent_guardian_signature_name: a.string(),
-    medical_conditions: a.string().required(),
-    emergency_contact_1_name: a.string().required(),
-    emergency_contact_1_phone: a.string().required(),
-    emergency_contact_1_email: a.string(),
-    emergency_contact_2_name: a.string(),
-    emergency_contact_2_phone: a.string(),
-    emergency_contact_2_email: a.string(),
-    medical_insurance_information: a.string().required(),
-    risk_accepted: a.boolean().required(),
-    medical_care_accepted: a.boolean().required(),
-    electronic_signature_accepted: a.boolean().required(),
-    signed_at: a.datetime().required(),
-    waiver_version: a.string().required(),
-  })
-  .authorization((allow) => [allow.owner()]),
+    .model({
+      camper_id: a.id().required(),
+      participant_name: a.string().required(),
+      participant_is_minor: a.boolean().required(),
+      participant_signature_name: a.string().required(),
+      parent_guardian_name: a.string(),
+      parent_guardian_signature_name: a.string(),
+      medical_conditions: a.string().required(),
+      emergency_contact_1_name: a.string().required(),
+      emergency_contact_1_phone: a.string().required(),
+      emergency_contact_1_email: a.string(),
+      emergency_contact_2_name: a.string(),
+      emergency_contact_2_phone: a.string(),
+      emergency_contact_2_email: a.string(),
+      medical_insurance_information: a.string().required(),
+      risk_accepted: a.boolean().required(),
+      medical_care_accepted: a.boolean().required(),
+      electronic_signature_accepted: a.boolean().required(),
+      signed_at: a.datetime().required(),
+      waiver_version: a.string().required(),
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.group("ADMINS").to(["create", "read", "update", "delete"]),
+    ]),
 
   FamilyCampPayment: a
-  .model({
-    family_name: a.string(),
+    .model({
+      family_name: a.string(),
 
-    financial_assistance_requested: a.boolean(),
+      financial_assistance_requested: a.boolean(),
 
-    // Amount the family says it can contribute toward camp.
-    // This may remain blank.
-    family_contribution_amount: a.float(),
+      // Amount the family says it can contribute toward camp.
+      // This may remain blank.
+      family_contribution_amount: a.float(),
 
-    // Optional amount beyond the normal camp fee.
-    additional_donation_amount: a.float(),
-  })
-  .authorization((allow) => [
-    allow.owner(),
-    allow.group("ADMINS").to([
-      "read",
-      "update",
-      "delete",
+      // Optional amount beyond the normal camp fee.
+      additional_donation_amount: a.float(),
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.group("ADMINS").to(["read", "update", "delete"]),
     ]),
-  ]),
 
   AppSettings: a
-  .model({
-    is_final: a.boolean().default(false),
-  })
-  .authorization((allow) => [
-    allow.authenticated().to(["read"]),
+    .model({
+      is_final: a.boolean().default(false),
+    })
+    .authorization((allow) => [
+      allow.authenticated().to(["read"]),
 
-    allow.group("ADMINS").to([
-      "create",
-      "read",
-      "update",
-      "delete",
+      allow.group("ADMINS").to(["create", "read", "update", "delete"]),
     ]),
-  ]),
 
   Camper: a
     .model({
@@ -90,40 +84,40 @@ const schema = a.schema({
         .boolean()
         .authorization((allow) => [
           allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+          allow.group("ADMINS").to(["create", "read", "update", "delete"]),
         ]),
 
       isSLDCfee: a
         .boolean()
         .authorization((allow) => [
           allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+          allow.group("ADMINS").to(["create", "read", "update", "delete"]),
         ]),
 
       isCampAccept: a
         .boolean()
         .authorization((allow) => [
-         allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+          allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update", "delete"]),
         ]),
 
       isCampFee: a
         .boolean()
         .authorization((allow) => [
-         allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+          allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update", "delete"]),
         ]),
 
       isCampWaiver: a
         .boolean()
         .authorization((allow) => [
-         allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+          allow.owner(),
+          allow.group("ADMINS").to(["create", "read", "update", "delete"]),
         ]),
     })
     .authorization((allow) => [
       allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+      allow.group("ADMINS").to(["create", "read", "update", "delete"]),
     ]),
   SLDCApplication: a
     .model({
@@ -152,8 +146,8 @@ const schema = a.schema({
       application_version: a.string(),
     })
     .authorization((allow) => [
-     allow.owner(),
-          allow.group("ADMINS").to(["create", "read", "update","delete"]),
+      allow.owner(),
+      allow.group("ADMINS").to(["create", "read", "update", "delete"]),
     ]),
 });
 
