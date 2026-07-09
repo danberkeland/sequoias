@@ -1802,3 +1802,66 @@ textarea {
     margin-top: 16px;
   }
 }
+
+.family-card-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.family-card-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.family-card {
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  background: white;
+}
+
+.family-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+}
+
+.family-card-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.family-card-chevron {
+  width: 1.25rem;
+  font-size: 1rem;
+}
+
+.family-card-body {
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.family-card .family-member-count {
+  display: block;
+  margin-top: 0.2rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .family-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
