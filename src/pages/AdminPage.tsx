@@ -1,4 +1,4 @@
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
@@ -12,8 +12,7 @@ import { MealCountsCard } from "../components/admin/MealCountsCard";
 import { DrivingToFromCampCard } from "../components/admin/DrivingToFromCampCard";
 import { DrivingAtCampCard } from "../components/admin/DrivingAtCampCard";
 import { CampOverviewStats } from "../components/admin/CampOverviewStats";
-import { RegisteredCamperRow } from "../components/admin/RegisteredCamperRow";
-import { FamilyGroupHeaderRow } from "../components/admin/FamilyGroupHeaderRow";
+import { RegisteredCampersTable } from "../components/admin/RegisteredCampersTable";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -31,9 +30,6 @@ import {
   getFamilyGroups,
   type FamilyGroup,
 } from "../utils/adminFamilies";
-
-
-type SLDCApplication = Schema["SLDCApplication"]["type"];
 
 
 function AdminPage() {
@@ -78,18 +74,6 @@ function AdminPage() {
   const familyGroups = useMemo<FamilyGroup[]>(() => {
     return getFamilyGroups(campers);
   }, [campers]);
-
-
-
-
-
-  function getCamperSLDCApplication(
-    camperId: string
-  ): SLDCApplication | undefined {
-    return applications.find(
-      (application) => application.camper_id === camperId
-    );
-  }
 
 
   return (
@@ -155,64 +139,13 @@ function AdminPage() {
 
       </section>
 
-      <section className="card">
-        <div className="section-header">
-          <div>
-            <h2>All Registered Campers</h2>
-            <p>
-              Registrations submitted by all families
-            </p>
-          </div>
-        </div>
-
-        {campers.length === 0 ? (
-          <div className="empty-state">
-            <h3>No campers found</h3>
-          </div>
-        ) : (
-          <div className="table-wrap">
-            <table className="campers-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>SLDC Member</th>
-                  <th>SLDC Fee</th>
-                  <th>Camp Accepted</th>
-                  <th>Camp Fee</th>
-                  <th>Camp Waiver</th>
-                  <th>Type</th>
-                  <th>Attendance</th>
-                  <th>SLDC Waiver</th>
-                  <th>Dietary Needs</th>
-                  <th>Transportation</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {familyGroups.map((family) => (
-                  <Fragment key={family.key}>
-                    <FamilyGroupHeaderRow
-                      family={family}
-                      columnCount={11}
-                      isFamilyStatusChecked={isFamilyStatusChecked}
-                      updateFamilyStatus={updateFamilyStatus}
-                    />
-
-                    {family.campers.map((camper) => (
-                      <RegisteredCamperRow
-                        key={camper.id}
-                        camper={camper}
-                        application={getCamperSLDCApplication(camper.id)}
-                        updateCamperStatus={updateCamperStatus}
-                      />
-                    ))}
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      <RegisteredCampersTable
+        familyGroups={familyGroups}
+        applications={applications}
+        updateCamperStatus={updateCamperStatus}
+        updateFamilyStatus={updateFamilyStatus}
+        isFamilyStatusChecked={isFamilyStatusChecked}
+      />
     </main>
   );
 }
