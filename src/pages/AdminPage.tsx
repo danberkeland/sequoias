@@ -5,14 +5,9 @@ import type { Schema } from "../../amplify/data/resource";
 import { useApplicationStage } from "../hooks/useApplicationStage";
 import { useAdminCampData } from "../hooks/useAdminCampData";
 import { useCamperStatusUpdates } from "../hooks/useCamperStatusUpdates";
-import { ApplicationStageCard } from "../components/admin/ApplicationStageCard";
-import { CampBirthdaysCard } from "../components/admin/CampBirthdaysCard";
-import { MealCountsCard } from "../components/admin/MealCountsCard";
-import { DrivingToFromCampCard } from "../components/admin/DrivingToFromCampCard";
-import { DrivingAtCampCard } from "../components/admin/DrivingAtCampCard";
-import { CampOverviewStats } from "../components/admin/CampOverviewStats";
 import { RegisteredCampersTable } from "../components/admin/RegisteredCampersTable";
 import { AdminHero } from "../components/admin/AdminHero";
+import { CampOverviewSection } from "../components/admin/CampOverviewSection";
 import {
   getCampBirthdays,
   type CampBirthday,
@@ -83,41 +78,18 @@ function AdminPage() {
         signOut={signOut}
       />
 
-      <section className="card">
-        <div className="section-header">
-          <div>
-            <h2>Camp Overview</h2>
-            <p>Current registration totals</p>
-          </div>
-
-          <ApplicationStageCard
-            isFinalPhase={isFinalPhase}
-            settingsLoaded={settingsLoaded}
-            isSavingPhase={isSavingPhase}
-            changeApplicationPhase={changeApplicationPhase}
-          />
-
-        </div>
-        <CampOverviewStats
-          campers={campers}
-          applications={applications}
-        />
-        <CampBirthdaysCard campBirthdays={campBirthdays} />
-        <MealCountsCard
-          registeredCamperCount={campers.length}
-          mealSummary={mealSummary}
-        />
-        <DrivingToFromCampCard
-          drivers={drivers}
-          transportationSummary={transportationSummary}
-        />
-
-        <DrivingAtCampCard
-          drivers={drivers}
-          transportationSummary={transportationSummary}
-        />
-
-      </section>
+      <CampOverviewSection
+        campers={campers}
+        applications={applications}
+        isFinalPhase={isFinalPhase}
+        settingsLoaded={settingsLoaded}
+        isSavingPhase={isSavingPhase}
+        changeApplicationPhase={changeApplicationPhase}
+        campBirthdays={campBirthdays}
+        mealSummary={mealSummary}
+        drivers={drivers}
+        transportationSummary={transportationSummary}
+      />
 
       <RegisteredCampersTable
         familyGroups={familyGroups}
