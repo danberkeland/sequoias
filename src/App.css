@@ -1865,3 +1865,22 @@ textarea {
     flex-direction: column;
   }
 }
+
+.family-card-body .table-wrap {
+  overflow-x: auto;
+}
+
+.family-card-body .campers-table th:first-child,
+.family-card-body .campers-table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: white;
+  min-width: 180px;
+  box-shadow: 1px 0 0 #e5e7eb;
+}
+
+.family-card-body .campers-table th:first-child {
+  z-index: 3;
+  background: #f9fafb;
+}
