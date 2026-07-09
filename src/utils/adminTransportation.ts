@@ -129,3 +129,7 @@ export function getTransportationSummary(drivers: Camper[]) {
     atCampDays,
   };
 }
+
+export type TransportationSummary = ReturnType<
+  typeof getTransportationSummary
+>;
