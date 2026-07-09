@@ -1,10 +1,11 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useMemo } from "react";
 import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { Link } from "react-router-dom";
 import type { Schema } from "../../amplify/data/resource";
 import { printSLDCWaiver } from "../utils/printSLDCWaiver";
 import { useApplicationStage } from "../hooks/useApplicationStage";
+import { useAdminCampData } from "../hooks/useAdminCampData";
 
 import {
   getCampBirthdays,
@@ -53,9 +54,11 @@ function AdminPage() {
   changeApplicationPhase,
 } = useApplicationStage();
 
-  const [campers, setCampers] = useState<Camper[]>([]);
-  const [applications, setApplications] = useState<SLDCApplication[]>([]);
-  
+const {
+  campers,
+  setCampers,
+  applications,
+} = useAdminCampData(client);
 
   const mealSummary = useMemo<MealSummary>(() => {
   return getMealSummary(campers);
@@ -189,51 +192,6 @@ const transportationSummary = useMemo(() => {
     }
   }
 
-  useEffect(() => {
-    const camperSubscription =
-      client.models.Camper.observeQuery().subscribe({
-        next: ({ items, isSynced }) => {
-          console.log("Camper observer:", {
-            isSynced,
-            campers: items.map((camper) => ({
-              id: camper.id,
-              isSLDCmember: camper.isSLDCmember,
-              isSLDCfee: camper.isSLDCfee,
-              isCampAccept: camper.isCampAccept,
-              isCampFee: camper.isCampFee,
-              isCampWaiver: camper.isCampWaiver,
-            })),
-          });
-
-          // Do not overwrite the optimistic checkbox state
-          // with an earlier local snapshot.
-          if (!isSynced) {
-            return;
-          }
-
-          setCampers([...items]);
-        },
-
-        error: (error) => {
-          console.error("Admin camper query error:", error);
-        },
-      });
-
-    const applicationSubscription =
-      client.models.SLDCApplication.observeQuery().subscribe({
-        next: ({ items }) => {
-          setApplications([...items]);
-        },
-        error: (error) => {
-          console.error("Admin SLDC query error:", error);
-        },
-      });
-
-    return () => {
-      camperSubscription.unsubscribe();
-      applicationSubscription.unsubscribe();
-    };
-  }, [client]);
 
   function getCamperSLDCApplication(
     camperId: string
